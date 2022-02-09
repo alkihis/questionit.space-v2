@@ -28,7 +28,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
-import QuestionCard from '~/components/QuestionCard/QuestionCard.vue';
+import QuestionCard from '~/components/QuestionCard.vue';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import QuestionConversation from '~/components/QuestionConversation/QuestionConversation.vue';
 import { isAxiosError, convertAxiosError, makeTitle, fullDateText, randomAnonymousImage, QUESTION_IT_FULL_URL } from '~/utils/helpers';

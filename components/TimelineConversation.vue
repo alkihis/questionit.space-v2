@@ -29,9 +29,9 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
-import QuestionCard from '~/components/QuestionCard/QuestionCard';
+import QuestionCard from '~/components/QuestionCard.vue';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
-import QuestionConversation from '~/components/QuestionConversation/QuestionConversation';
+import QuestionConversation from '~/components/QuestionConversation/QuestionConversation.vue';
 import { isAxiosError, convertAxiosError, sleep } from '~/utils/helpers';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
 

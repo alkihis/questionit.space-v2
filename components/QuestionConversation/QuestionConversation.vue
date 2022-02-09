@@ -72,7 +72,7 @@ import BulmaModal from '~/components/BulmaModal/BulmaModal';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import { handleError } from '~/utils/helpers';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
-import QuestionCard from "~/components/QuestionCard/QuestionCard.vue";
+import QuestionCard from "~/components/QuestionCard.vue";
 
 const LOAD_SIZE = 10;
 

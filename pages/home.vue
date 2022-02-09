@@ -58,9 +58,9 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
-import QuestionCard from '~/components/QuestionCard/QuestionCard.vue';
+import QuestionCard from '~/components/QuestionCard.vue';
 import { handleError, makeTitle, isTouchDevice } from '~/utils/helpers';
-import TimelineConversation from '~/components/TimelineConversation/TimelineConversation.vue';
+import TimelineConversation from '~/components/TimelineConversation.vue';
 import { StateChanger } from 'vue-infinite-loading';
 import ItemLoader from '~/components/ItemLoader.vue';
 import PullLoader from '~/components/PullLoader.vue';

@@ -198,13 +198,13 @@
 
 <script lang="ts">
 import { Component, Prop } from 'nuxt-property-decorator';
-import QuestionBase from '../QuestionBase/QuestionBase';
-import Dropdown from '../Dropdown/Dropdown';
-import QuestionText from '../QuestionText/QuestionText';
-import AccountChooser from '../AccountChooser/AccountChooser';
-import ModalImage from '../ModalImage/ModalImage';
-import AskQuestion from '../AskQuestion/AskQuestion';
-import PollChoice from '../PollChoice/PollChoice';
+import QuestionBase from './QuestionBase/QuestionBase';
+import Dropdown from './Dropdown/Dropdown';
+import QuestionText from './QuestionText/QuestionText';
+import AccountChooser from './AccountChooser/AccountChooser';
+import ModalImage from './ModalImage/ModalImage';
+import AskQuestion from './AskQuestion/AskQuestion';
+import PollChoice from './PollChoice/PollChoice';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
 
 @Component({
@@ -324,7 +324,7 @@ export default class extends QuestionBase {
 </script>
 
 <style lang="scss" scoped>
-@import '~bulma/sass/utilities/initial-variables';
+@import '../node_modules/bulma/sass/utilities/initial-variables';
 @import '~/assets/css/functions.scss';
 
 article {

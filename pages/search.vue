@@ -16,167 +16,162 @@
     <section style="margin-top: 1rem;">
       <fluid-container>
         <div class="field">
-          <div :class="{ 'control': true, 'has-icons-left': true, 'is-loading': is_searching }">
-            <input class="input is-medium main-search-field" type="text" :placeholder="$t('search_users') + '...'" v-model="search_text">
+          <div :class="{ 'control': true, 'has-icons-left': true }">
+            <input class="input is-medium main-search-field" type="text" :placeholder="$t('search_users') + '...'" v-model="searchText">
             <span class="icon is-small is-left">
               <i class="fas fa-search"></i>
             </span>
           </div>
         </div>
 
-        <div v-if="is_searching || current_search" class="wrapper">
-          <div class="loader-5 center"><span></span></div>
-        </div>
-
-        <div v-if="matches && matches.length" class="box">
+        <div v-if="matches && matches.items.length" class="box">
           <user-card
-            v-for="item in matches"
+            v-for="item in matches.items"
             :key="item.id"
             :user="item"
           >
             {{ item }}
           </user-card>
         </div>
-        <div v-if="matches && !matches.length" class="no-results">
+        <div v-if="matches && !matches.items.length" class="no-results">
           <p class="nanum">
             {{ $t('no_users') }}.
           </p>
         </div>
 
         <client-only>
-          <infinite-loading v-if="matches" @infinite="nextPage" />
+          <infinite-loading v-if="matches" :identifier="infiniteId" @infinite="nextPage">
+            <template #spinner>
+              <span />
+            </template>
+          </infinite-loading>
         </client-only>
+
+        <div v-if="loading" class="wrapper">
+          <div class="loader-5 center"><span></span></div>
+        </div>
       </fluid-container>
     </section>
   </main>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'nuxt-property-decorator';
-import { handleError, makeTitle } from '~/utils/helpers';
-import UserCard from '~/components/UserCard/UserCard';
-import { StateChanger } from 'vue-infinite-loading';
-import { ISentUser } from "~/utils/types/sent.entities.types";
+import { Component, Vue } from "nuxt-property-decorator";
+import { handleError, makeTitle } from "~/utils/helpers";
+import UserCard from "~/components/UserCard.vue";
+import { StateChanger } from "vue-infinite-loading";
+import { IPaginatedWithIdsResult, ISentUser } from "~/utils/types/sent.entities.types";
+
+const pageSize = 30;
 
 @Component({
   components: {
-    UserCard: UserCard,
+    UserCard,
   },
   scrollToTop: true,
-  async asyncData({ route, app }) {
-    if (route.query.q) {
-      const query = route.query.q as string;
-
-      try {
-        const matches = (await app.$axios.get('users/find', { params: { q: query, size: 30 } })).data;
-        return {
-          matches,
-          last_search: query,
-          real_search_text: query,
-          can_load_more: matches.length >= 30,
-        };
-      } catch (e) {
-        // tant pis :(
-      }
-    }
-
-    return { matches: null, last_search: "", real_search_text: "", can_load_more: false };
-  },
   layout: 'default_solid',
 })
 export default class extends Vue {
-  is_searching: any = 0;
-  real_search_text!: string;
-  last_search!: string;
-  matches!: ISentUser[] | null;
-  can_load_more!: boolean;
-  current_search: number = 0;
+  loading = false;
+  isSearching: any = 0;
+  realSearchText: string = '';
+  lastSearch: string = '';
+  matches: IPaginatedWithIdsResult<ISentUser> | null = null;
+  canLoadMore: boolean = false;
+  infiniteId = 0;
 
   head() {
     return {
-      title: makeTitle(this.$t('search').toString())
+      title: makeTitle(this.$t('search').toString()),
     }
   };
 
-  get search_text() {
-    return this.real_search_text;
+  get searchText() {
+    return this.realSearchText;
   }
 
-  set search_text(v: string) {
-    this.real_search_text = v;
+  set searchText(value: string) {
+    this.realSearchText = value;
 
-    if (v !== this.$route.query.q) {
-      if (!v) {
+    if (value !== this.$route.query.q) {
+      if (!value) {
         this.$router.replace({ query: {} });
       }
       else {
-        this.$router.replace({ query: { q: v } });
+        this.$router.replace({ query: { q: value } });
       }
     }
 
-    if (this.is_searching === -1) {
-      return;
-    }
+    this.makeNewSearch(value);
+  }
 
-    clearTimeout(this.is_searching);
+  makeNewSearch(value: string) {
+    clearTimeout(this.isSearching);
 
-    if (!v.trim()) {
-      this.is_searching = 0;
+    if (!value.trim()) {
+      this.isSearching = 0;
       this.matches = null;
-      this.last_search = "";
-      this.can_load_more = false;
+      this.lastSearch = '';
+      this.canLoadMore = false;
+      this.loading = false;
       return;
     }
 
     this.matches = null;
-    this.is_searching = setTimeout(async () => {
-      this.is_searching = 0;
-      this.current_search = Math.random();
-      const local_search = this.current_search;
+    this.loading = true;
+
+    this.isSearching = setTimeout(async () => {
+      this.isSearching = 0;
 
       try {
-        const matches = (await this.$axios.get('users/find', { params: { q: v.trim(), size: 30 } })).data as ISentUser[];
-
-        if (this.current_search !== local_search) {
-          // New search made
-          return;
-        }
-
-        this.matches = matches;
-        this.last_search = v;
-        this.can_load_more = this.matches.length >= 30;
+        this.matches = await this.$axios.$get('user/search', {
+          params: {
+            q: value.trim(),
+            pageSize
+          },
+        }) as IPaginatedWithIdsResult<ISentUser>;
+        this.lastSearch = value;
+        this.canLoadMore = this.matches.items.length >= pageSize;
+        this.infiniteId = Math.random();
+        this.loading = false;
       } catch (e) {
         handleError(e, this);
       }
-
-      this.current_search = 0;
     }, 700);
   }
 
   async nextPage($state: StateChanger) {
-    if (this.is_searching === -1)
+    if (this.isSearching === -1)
       return;
 
-    if (!this.matches || this.matches.length === 0 || !this.can_load_more) {
+    if (!this.matches || this.matches.items.length === 0 || !this.canLoadMore) {
       $state.complete();
       return;
     }
 
-    this.is_searching = -1;
+    this.isSearching = -1;
+    const idBeforeFetch = this.infiniteId;
+    this.loading = true;
 
     try {
-      const matches = (await this.$axios.get('users/find', {
+      const matches = await this.$axios.$get('user/search', {
         params: {
-          q: this.last_search,
-          until: this.matches[this.matches.length - 1].id
+          q: this.lastSearch,
+          untilId: this.matches.items[this.matches.items.length - 1].id,
+          pageSize,
         }
-      })).data as ISentUser[];
+      }) as IPaginatedWithIdsResult<ISentUser>;
 
-      this.matches = [...this.matches, ...matches];
+      if (this.infiniteId !== idBeforeFetch) {
+        return;
+      }
 
-      if (!matches.length) {
+      this.matches.items = [...this.matches.items, ...matches.items];
+      this.loading = false;
+
+      if (!matches.items.length) {
         $state.complete();
-        this.can_load_more = false;
+        this.canLoadMore = false;
       }
       else {
         $state.loaded();
@@ -184,14 +179,21 @@ export default class extends Vue {
     } catch (e) {
       handleError(e, this);
       $state.error();
+      this.loading = false;
     } finally {
-      this.is_searching = 0;
+      this.isSearching = 0;
     }
   }
 
   mounted() {
     const el = this.$el.querySelector('.main-search-field') as HTMLInputElement;
     el?.focus();
+
+    const query = this.$route.query.q as string;
+
+    if (query) {
+      this.searchText = query;
+    }
   }
 }
 </script>

@@ -735,11 +735,11 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
 import { makeTitle, handleError, numberFormat, fullDateText, QUESTION_IT_FULL_URL, FULL_BLACK_LOGO, isAxiosError, convertAxiosError } from '~/utils/helpers';
-import QuestionCard from '~/components/QuestionCard/QuestionCard.vue';
+import QuestionCard from '~/components/QuestionCard.vue';
 import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
 import { StateChanger } from 'vue-infinite-loading';
-import UserCard from '~/components/UserCard/UserCard';
+import UserCard from '~/components/UserCard.vue';
 import CropModal from '~/components/CropModal/CropModal';
 import { AxiosResponse } from 'axios';
 import AccountChooser from '~/components/AccountChooser/AccountChooser';
