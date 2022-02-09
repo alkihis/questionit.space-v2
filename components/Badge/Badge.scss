@@ -1,0 +1,38 @@
+@import '~bulma/sass/utilities/initial-variables';
+
+.icon-badge {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  height: 1rem;
+  min-width: 1rem;
+  bottom: .6rem;
+  right: 0;
+  background: $yellow;
+  pointer-events: none;
+  user-select: none;
+
+  @media screen and (max-width: 1023px) {
+    right: 2px;
+  }
+
+  &.inline {
+    display: inline-flex;
+    position: relative;
+    right: unset;
+    bottom: unset;
+  }
+
+  span {
+    font-size: x-small;
+    font-weight: bold;
+    color: black;
+  }
+
+  &.navbadge {
+    right: -7px;
+    bottom: -2px;
+  }
+}

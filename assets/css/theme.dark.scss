@@ -1,0 +1,143 @@
+// Theme: Nightmode
+
+@include dark-theme-root {
+  // Loader
+  --loader-color: rgb(146, 164, 202);
+  
+  // Backgrounds
+  --default-background: #15202b;
+  --pre-bg: #2a3c4e;
+  
+  // Box
+  --box-background: #101821;
+  --box-color: #e6e6e6;
+  --divider-border-color: #b2bbd6;
+
+  // Colors
+  --default-color: #d4d4d4;
+  --link-color: #7caeff;
+  --link-hover-color: #b6d2ff;
+  --divider-text-color: #b4b4b4;
+  --strong-default-color: rgb(230, 230, 230);
+  --title-color: #ececec;
+  --subtitle-color: #d1d1d1;
+  --label-color: #dadada;
+  --default-card-color: #d8d8d8;
+  --pull-refresh-color: rgba(255, 255, 255, 0.644);
+  --pre-color: #e6e6e6;
+
+  // Default buttons
+  --button-bg-color: rgb(29, 28, 28);
+	--button-color: #f0f0f0;
+	--button-border-color: #585858;
+  --button-border-color-hover: #353535;
+  --button-color-hover: #bfbfce;
+  --button-link-light-bg: #262e3b;
+  --button-link-light-color: #7caeff;
+  --button-link-light-hover-bg: #495569;
+  --button-link-light-hover-color: #b4cffc;
+  --button-info-light-bg: #262e3b;
+  --button-info-light-color: #7caeff;
+  --button-info-light-hover-bg: #495569;
+  --button-info-light-hover-color: #b4cffc;
+
+  // Hero
+  --hero-background: #1b2b3b;
+  --hero-title-color: rgba(255, 255, 255, 0.7);
+  --hero-subtitle-color: rgba(255, 255, 255, 0.9);
+
+  // Inputs
+  --input-background: #1a2533;
+  --input-placeholder: #7a808b;
+  --input-icon-color: rgb(195, 197, 211);
+  --input-color: #dddddd;
+  --checkbox-hover-color: #97a4bd;
+  --input-disabled-background: #545a61;
+	--input-disabled-border: #a1a1a1;
+	--input-disabled-color: #d2d2d2;
+
+  // Messages
+  --message-link-bg: #20304b;
+  --message-link-border: #8db3f1;
+  --message-link-color: #d4e1f5;
+  --message-dark-bg: #292e38;
+	--message-dark-border: #585858;
+  --message-dark-color: #ebebeb;
+  --message-warning-bg: #504626;
+	--message-warning-border: #ffd83b;
+	--message-warning-color: #ffeea8;
+  
+  // Dropdown
+  --dropdown-content-bg: rgb(32, 34, 43);
+  --dropdown-item-hover: rgb(52, 57, 83);
+
+  // Modal
+  --modal-head-border: #363640;
+  --modal-head-background: rgb(55, 55, 66);
+  --modal-body-background: rgb(28, 31, 35);
+  --modal-card-title: #ffffff;
+  --croppie-input-bg-color: var(--modal-body-background);
+
+  // Tags
+  --tag-link-hover: #363636;
+
+
+  // --------------
+	// - Components -
+	// --------------
+
+  // _AccountChooser_
+  --account-chooser-bg-color: rgb(30, 30, 37);
+  --account-chooser-bg-color-hover: rgb(54, 54, 65);
+  --account-chooser-account-border: #141414;
+  --account-trigger-border: #7e7e7e;
+
+  // _AccountHandler_
+  --account-clickable-bg-hover: rgb(32, 38, 53);
+
+  // _NavBar_
+  --navbar-background: #0d2842;
+  --navbar-text-color: white;
+  --navbar-item-focus: #081827;
+  --navbar-bottom-bg: #08121d;
+  --navbar-bottom-icon-color: white;
+	--navbar-bottom-icon-selected-color: #6eaeff;
+
+  // _NotificationCard_
+  --notification-card-color: #16161b;
+  --notification-card-color-seen: #313140;
+  --notification-profile-link: white;
+
+  // _PollChoice_
+  --poll-answered-text-color: #e7e7e7;
+  --poll-unanswered-text-color: #ffffff;
+  --poll-answered-not-selected-border-color: rgb(188, 203, 218);
+  --poll-not-selected-border-color: rgb(202, 202, 202);
+  --poll-selected-border-color: rgb(141, 141, 141);
+  --poll-selected-background: rgb(69, 92, 114);
+  --poll-hover-background: rgb(58, 68, 92);
+
+  // _QuestionCard_
+  --card-level-icon-color: rgb(175, 175, 175);
+  --question-divider-opacity: .5;
+
+  // _QuestionConversation_
+  --answers-text-color: #b4b4b4;
+
+  // _UserCard_
+  --user-slug-color: white;
+
+  // _ItemLoader_
+  --item-loader-text-color: #b4d1e8;
+  --item-loader-bg-color: #2f4a61;
+
+  // ---------
+	// - PAGES -
+	// ---------
+
+	// Settings
+  --settings-field-explaination: rgb(184, 184, 184);
+  
+  // Profile
+  --user-clickable-hover: #6ca2e9; 
+}

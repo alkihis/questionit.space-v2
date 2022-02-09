@@ -1,0 +1,38 @@
+// For usage in themed components (usage for & for scoping)
+@mixin dark-theme {
+  :root[data-theme="dark"] & {
+    @content;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] & {
+      @content;
+    }  
+  }
+}
+
+@mixin violet-theme {
+  :root[data-theme="violet"] & {
+    @content;
+  }
+}
+
+// -----------------------------------------------
+// For usage in theme definition (theme.name.scss)
+@mixin dark-theme-root {
+  :root[data-theme="dark"] {
+    @content;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    :root[data-theme="auto"] {
+      @content;
+    }  
+  }
+}
+
+@mixin violet-theme-root {
+  :root[data-theme="violet"] {
+    @content;
+  }
+}

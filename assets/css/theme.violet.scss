@@ -1,0 +1,83 @@
+// Violet theme
+@include violet-theme-root {
+	// Variables
+	--loader-color: rgb(139, 10, 179);
+	--default-background: rgb(255, 250, 255);
+	--hero-background: rgb(235, 220, 243);
+	--hero-title-color: rgba(0, 0, 0, 0.829);
+	--hero-subtitle-color: rgb(0, 0, 0);
+	--default-color: #363636;
+	--link-color: #7318a8;
+	--link-hover-color: #9d46cf;
+	--title-color: #3b333f;
+	--subtitle-color: #433947;
+	--label-color: #3b333f;
+	--divider-border-color: #dec1f1;
+
+	// Default button
+	--button-link-light-bg: #f3eefc;
+	--button-link-light-color: #9621c4;
+	--button-link-light-hover-bg: #f1e3fa;
+	--button-link-light-hover-color: #8821c4;
+	--button-info-light-bg: #f4eefc;
+	--button-info-light-color: #7b21c4;
+	--button-info-light-hover-bg: #ebe3fa;
+  --button-info-light-hover-color: #721daa;
+  
+  // Inputs
+	--input-background: white;
+
+	// Messages
+	--message-link-bg: #f4eefc;
+	--message-link-border: #9032dc;
+	--message-link-color: #7b21c4;
+	--message-dark-bg: #f3ecfc;
+	--message-warning-bg: #f7eecd;
+	--message-warning-color: #6e5801;
+
+	// Tags
+	--tag-background: whitesmoke;
+	--tag-background-hover: #e8e8e8;
+  --tag-link-hover: var(--link-hover-color);
+  // Todo: tag info inside color !
+  
+  // --------------
+	// - Components -
+	// --------------
+
+	// _NavBar_
+  --navbar-background: rgb(236, 228, 241);
+  --navbar-real-bg: rgba(92, 21, 158, 0.678);
+
+	// _PollChoice_
+	--poll-selected-background: #fceeff;
+	--poll-hover-background: rgb(208, 201, 212);
+
+	// _QuestionCard_
+	--card-level-icon-color: $grey;
+	--question-divider-opacity: .3;
+	
+	// _QuestionConversation_
+  --answers-text-color: #6b6b6b;
+  --tag-timeline-bg-color: rgb(167, 44, 192);
+  --tag-timeline-line-bg-color: rgb(182, 49, 209);
+
+	// _UserCard_
+	--user-slug-color: black;
+
+	// _ItemLoader_
+	// TODO !
+	--item-loader-bg-color: #256492;
+	--item-loader-text-color: #75a5c7;
+
+	// ---------
+	// - PAGES -
+	// ---------
+
+	// Settings
+	--settings-field-explaination: rgb(107, 107, 107);
+
+	// Profile
+	--user-clickable-hover: #0e5abb;
+}
+

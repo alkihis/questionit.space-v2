@@ -1,0 +1,351 @@
+/// ################
+/// # THEME COLORS #
+/// ################
+
+:root {
+	// Base theme: White/Light blue
+	// Variables
+	--loader-color: rgb(48, 35, 161);
+	--default-background: white;
+	--hero-background: whitesmoke;
+	--hero-title-color: rgba(0, 0, 0, 0.7);
+	--hero-subtitle-color: rgba(0, 0, 0, 0.9);
+	--default-color: #4a4a4a;
+	--link-color: #3273dc;
+	--link-hover-color: #363636;
+	--title-color: #363636;
+	--subtitle-color: #4a4a4a;
+	--label-color: #363636;
+	--divider-border-color: #ededed;
+	--divider-text-color: #7a7a7a;
+	--strong-default-color: #363636;
+	--default-card-color: #4a4a4a;
+	--pull-refresh-color: rgba(0, 0, 0, 0.3);
+	--pre-bg: #ececec;
+	--pre-color: #4a4a4a;
+
+	// Box
+	--box-background: white;
+	--box-color: #4a4a4a;
+
+	// Default button
+	--button-bg-color: white;
+	--button-color: #363636;
+	--button-border-color: #dbdbdb;
+	--button-border-color-hover: #b5b5b5;
+	--button-color-hover: #363636;
+	--button-link-light-bg: #eef3fc;
+	--button-link-light-color: #2160c4;
+	--button-link-light-hover-bg: #e3ecfa;
+	--button-link-light-hover-color: #2160c4;
+	--button-info-light-bg: #eef3fc;
+	--button-info-light-color: #2160c4;
+	--button-info-light-hover-bg: #e3f1fa;
+	--button-info-light-hover-color: #1d72aa;
+
+	// Inputs
+	--input-background: inherit;
+	--input-placeholder: #dbdbdb;
+	--input-icon-color: #4a4a4a;
+	--input-color: #363636;
+	--checkbox-hover-color: #363636;
+	--input-disabled-background: whitesmoke;
+	--input-disabled-border: whitesmoke;
+	--input-disabled-color: #7a7a7a;
+
+	// Messages
+	--message-link-bg: #eef3fc;
+	--message-link-border: #3273dc;
+	--message-link-color: #2160c4;
+	--message-dark-bg: #fafafa;
+	--message-dark-border: #363636;
+	--message-dark-color: #4a4a4a;
+	--message-warning-bg: #fffbeb;
+	--message-warning-border: #ffdd57;
+	--message-warning-color: #947600;
+
+	// Dropdown
+	--dropdown-content-bg: white;
+	--dropdown-item-hover: whitesmoke;
+
+	// Modal card
+	--modal-head-border: #dbdbdb;
+	--modal-head-background: whitesmoke;
+	--modal-body-background: white;
+	--modal-card-title: #363636;
+	--croppie-input-bg-color: var(--modal-body-background);
+
+	// Tags
+	--tag-background: whitesmoke;
+	--tag-background-hover: #e8e8e8;
+	--tag-link-hover: var(--link-hover-color);
+
+
+	// --------------
+	// - Components -
+	// --------------
+
+	// _AccountChooser_
+	--account-chooser-bg-color: rgb(250, 250, 250);
+	--account-chooser-bg-color-hover: rgb(240, 240, 240);
+	--account-chooser-account-border: #f1f1f1;
+	--account-trigger-border: #f0f0f0;
+
+	// _AccountHandler_
+	--account-clickable-bg-hover: whitesmoke;
+
+	// _NavBar_
+	--navbar-background: white;
+	--navbar-real-bg: rgba(19,105,179,0.67843);
+  --navbar-text-color: black;
+	--navbar-item-focus: #fafafa;
+	--navbar-bottom-bg: #f1f1f1;
+	--navbar-bottom-icon-color: black;
+	--navbar-bottom-icon-selected-color: #0071e6;
+
+	// _NotificationCard_
+	--notification-card-color: white;
+	--notification-card-color-seen: whitesmoke;
+	--notification-profile-link: black;
+
+	// _PollChoice_
+	--poll-answered-text-color: #929292;
+	--poll-unanswered-text-color: #6d6d6d;
+	--poll-answered-not-selected-border-color: rgb(235, 235, 235);
+	--poll-not-selected-border-color: rgb(202, 202, 202);
+	--poll-selected-border-color: rgb(141, 141, 141);
+	--poll-selected-background: rgb(238, 247, 255);
+	--poll-hover-background: rgb(231, 231, 231);
+
+	// _QuestionCard_
+	--card-level-icon-color: $grey;
+	--question-divider-opacity: .3;
+
+	// _QuestionConversation_
+	--answers-text-color: #6b6b6b;
+	--tag-timeline-bg-color: #3298dc;
+	--tag-timeline-line-bg-color: #209cee;
+
+	// _UserCard_
+	--user-slug-color: black;
+
+	// _ItemLoader_
+	--item-loader-text-color: #256492;
+	--item-loader-bg-color: #d5e3ec;
+
+	// ---------
+	// - PAGES -
+	// ---------
+
+	// Settings
+	--settings-field-explaination: rgb(107, 107, 107);
+
+	// Profile
+	--user-clickable-hover: #0e5abb;
+
+	// Global theme application (from root element)
+	background-color: var(--default-background);
+}
+
+// Theme application (to sub-items)
+body {
+	color: var(--default-color);
+}
+
+a {
+	color: var(--link-color);
+
+	&:hover {
+		color: var(--link-hover-color);
+	}
+}
+
+pre {
+	background-color: var(--pre-bg);
+	color: var(--pre-color);
+}
+
+strong {
+	color: var(--strong-default-color);
+}
+
+.label {
+	color: var(--label-color);
+}
+
+.button {
+	background-color: var(--button-bg-color);
+	border-color: var(--button-border-color);
+	color: var(--button-color);
+
+	&:hover, &.is-hovered {
+    border-color: var(--button-border-color-hover);
+    color: var(--button-color-hover);
+	}
+
+	&.is-link.is-light {
+    background-color: var(--button-link-light-bg);
+		color: var(--button-link-light-color);
+
+		&:hover {
+			background-color: var(--button-link-light-hover-bg);
+			color: var(--button-link-light-hover-color);
+		}
+	}
+
+	&.is-info.is-light {
+    background-color: var(--button-link-light-bg);
+		color: var(--button-link-light-color);
+
+		&:hover {
+			background-color: var(--button-link-light-hover-bg);
+			color: var(--button-link-light-hover-color);
+		}
+	}
+}
+
+.has-text-link {
+	color: var(--link-color) !important;
+}
+
+.box {
+	background-color: var(--box-background);
+	color: var(--box-color);
+}
+
+.hero.is-light {
+	background-color: var(--hero-background);
+
+	.title {
+		color: var(--hero-title-color);
+	}
+	.subtitle {
+		color: var(--hero-subtitle-color);
+	}
+}
+
+.title {
+	color: var(--title-color);
+}
+
+.subtitle {
+	color: var(--subtitle-color);
+}
+
+input.input, textarea.textarea, .select select {
+	background-color: var(--input-background);
+	color: var(--input-color);
+
+	&::placeholder {
+		color: var(--input-placeholder);
+	}
+
+	&[disabled] {
+    background-color: var(--input-disabled-background);
+    border-color: var(--input-disabled-border);
+		color: var(--input-disabled-color);
+	}
+}
+
+.control.has-icons-left .input:focus ~ .icon,
+.control.has-icons-left .select:focus ~ .icon,
+.control.has-icons-right .input:focus ~ .icon,
+.control.has-icons-right .select:focus ~ .icon {
+	color: var(--input-icon-color);
+}
+
+.checkbox:hover, .radio:hover {
+	color: var(--checkbox-hover-color);
+}
+
+.card-footer {
+	border-color: var(--divider-border-color);
+}
+
+// Messages
+.message {
+	&.is-link {
+		background-color: var(--message-link-bg);
+
+		.message-body {
+			border-color: var(--message-link-border);
+			color: var(--message-link-color);
+		}
+	}
+
+	&.is-dark {
+		background-color: var(--message-dark-bg);
+
+		.message-body {
+			border-color: var(--message-dark-border);
+			color: var(--message-dark-color);
+		}
+	}
+
+	&.is-warning {
+		background-color: var(--message-warning-bg);
+
+		.message-body {
+			border-color: var(--message-warning-border);
+			color: var(--message-warning-color);
+		}
+	}
+}
+
+.divider {
+	color: var(--divider-text-color);
+}
+
+.dropdown-content {
+	background-color: var(--dropdown-content-bg);
+}
+
+a.dropdown-item:hover, button.dropdown-item:hover {
+	background-color: var(--dropdown-item-hover);
+}
+
+.modal-card-head, .modal-card-foot {
+	border-color: var(--modal-head-border);
+	background-color: var(--modal-head-background);
+}
+
+.modal-card-body {
+	background-color: var(--modal-body-background);
+
+	.cr-slider {
+		background-color: var(--croppie-input-bg-color);
+	}
+}
+
+.modal-card-title {
+	color: var(--modal-card-title);
+}
+
+.card {
+	color: var(--default-card-color);
+}
+
+a.tag:not(body).is-delete {
+	background-color: var(--tag-background);
+
+	&:hover {
+		background-color: var(--tag-background-hover);
+		color: var(--tag-link-hover);
+	}
+}
+
+// Pull to refresh box
+.ptr--text, .ptr--icon {
+	color: var(--pull-refresh-color) !important;
+}
+
+.hero.is-light a:not(.button):not(.dropdown-item):not(.tag):not(.pagination-link.is-current), .hero.is-light strong {
+	color: var(--link-color);
+
+	&:hover {
+		color: var(--link-hover-color);
+	}
+}
+
+@import './theme.dark.scss';
+@import './theme.violet.scss';

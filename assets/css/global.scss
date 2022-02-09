@@ -1,0 +1,368 @@
+/* Import Bulma Utilities */
+@import '~bulma/sass/utilities/initial-variables';
+@import '~bulma/sass/utilities/functions';
+
+/* Variable changes go here */
+
+
+/* Import the rest of Bulma */
+@import '~bulma';
+
+// Import functions
+@import './functions.scss';
+
+// Import theme data
+@import './theme.scss';
+
+@mixin other-color {
+  background-color: red;
+}
+
+.nanum {
+	font-family: 'Nanum Gothic', 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.button.has-bg-transition {
+	transition: background-color .1s ease, color .1s ease;
+}
+
+html {
+	overflow-y: auto;
+}
+
+.logout-popup-wrapper {
+	position: relative;
+}
+
+.dropdown {
+	&.is-focusable:focus .dropdown-menu {
+		display: block;
+	}
+}
+
+body > .wrapper {
+	z-index: 99999;
+}
+
+.logout-popup {
+	z-index: 15000;
+	position: fixed;
+	top: 1rem;
+	left: 0;
+	width: 100%;
+	pointer-events: none;
+
+	.logout-content {
+		width: 70%;
+		margin: 0 auto;
+		box-shadow: 2px 2px 19px -1px rgba(0, 0, 0, 0.75);
+		pointer-events: all;
+
+		@media screen and (max-width: 1023px) {
+			width: 95%;
+		}
+	}
+
+	.message-end-actions {
+		display: flex;
+		justify-content: flex-end;
+	}
+}
+
+.is-checkradio[type="checkbox"]:focus+label::before, .is-checkradio[type="checkbox"]:focus+label:before {
+	outline: none;
+}
+
+.is-checkradio[type=checkbox]+label::after, .is-checkradio[type=checkbox]+label:after {
+	border-width: .13rem;
+}
+
+input.is-checkradio[type="checkbox"] + label {
+	user-select: none;
+}
+
+
+.is-flex-right {
+  justify-content: flex-end !important;
+}
+
+.modal-card-foot.is-flex-right {
+  display: flex;
+}
+
+.is-align-center {
+	text-align: center;
+}
+
+.slide-left-enter,
+.slide-right-leave-active {
+  opacity: 0;
+  transform: translate(30px, 0);
+}
+.slide-left-leave-active,
+.slide-right-enter {
+  opacity: 0;
+  transform: translate(-30px, 0);
+}
+
+span[data-tooltip]:not(.with-dash) {
+  border-bottom: none;
+}
+
+@media screen and (max-width: 1023px) {
+	// Hide tooltips on mobile
+	[data-tooltip]:not(.show-mobile):hover::before {
+		display: none !important;
+	}
+}
+
+/// ---- EMOJI SELECTOR ----
+.emoji-text-wrapper {
+	position: relative;
+}
+
+.emoji-text-selector {
+	position: absolute;
+	background-color: rgb(250, 250, 250);
+	border: rgb(238, 238, 238) 1px solid;
+
+	z-index: 10000000;
+	border-radius: 10px;
+
+	& > ul > li {
+		cursor: pointer;
+
+		&:hover {
+			background-color: rgb(224, 224, 224);
+		}
+
+		&:first-child {
+			padding-top: .5rem;
+			border-top-left-radius: 10px;
+			border-top-right-radius: 10px;
+		}
+		padding-top: .4rem;
+
+		&:last-child {
+			padding-bottom: .5rem;
+			border-bottom-left-radius: 10px;
+			border-bottom-right-radius: 10px;
+		}
+		padding-bottom: .4rem;
+		padding-left: 1rem;
+		padding-right: 1rem;
+
+		& > span:first-child {
+			// The emoji
+			height: 1em;
+			width: 1em;
+			line-height: 0.81em;
+			font-size: 1em;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		&.selected {
+			background-color: rgb(240, 240, 240);
+		}
+
+		& > span:last-child {
+			// The text
+			padding-left: .7rem;
+		}
+	}
+
+	&.hidden {
+		display: none;
+		pointer-events: none;
+	}
+}
+
+// TODO remove and replace emoji picker
+#Emojis {
+	font-family: unset !important;
+}
+/// ---- /EMOJI SELECTOR/ ----
+
+// Helpers
+.with-z-index {
+	z-index: 1;
+	position: relative;
+}
+
+// #region preloaders#
+// Preloaders
+/* Loader 5 */
+.loader-5 {
+	height: 32px;
+	width: 32px;
+	-webkit-animation: loader-5-1 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-1 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-1 {
+	0%   { -webkit-transform: rotate(0deg); }
+	100% { -webkit-transform: rotate(360deg); }
+}
+@keyframes loader-5-1 {
+	0%   { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+.loader-5::before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: auto;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: var(--loader-color);
+	border-radius: 50%;
+	-webkit-animation: loader-5-2 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-2 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-2 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(24px, 0, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-2 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(24px, 0, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.loader-5::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: auto;
+	bottom: 0; right: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: var(--loader-color);
+	border-radius: 50%;
+	-webkit-animation: loader-5-3 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-3 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-3 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(-24px, 0, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-3 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(-24px, 0, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.loader-5 span {
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: 0;
+	margin: auto;
+	height: 32px;
+	width: 32px;
+}
+.loader-5 span::before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: auto; right: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: var(--loader-color);
+	border-radius: 50%;
+	-webkit-animation: loader-5-4 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-4 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-4 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(0, 24px, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-4 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(0, 24px, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+.loader-5 span::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: auto; left: 0;
+	bottom: 0; right: 0;
+	margin: auto;
+	width: 8px;
+	height: 8px;
+	background: var(--loader-color);
+	border-radius: 50%;
+	-webkit-animation: loader-5-5 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+	        animation: loader-5-5 2s cubic-bezier(0.770, 0.000, 0.175, 1.000) infinite;
+}
+@-webkit-keyframes loader-5-5 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+	50%  { -webkit-transform: translate3d(0, -24px, 0) scale(.5); }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes loader-5-5 {
+	0%   { transform: translate3d(0, 0, 0) scale(1); }
+	50%  { transform: translate3d(0, -24px, 0) scale(.5); }
+	100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Loader 6 */
+.loader-6 {
+	height: 32px;
+	width: 32px;
+}
+.loader-6 span {
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: 0;
+	margin: auto;
+	height: 32px;
+	width: 32px;
+}
+.loader-6 span::before,
+.loader-6 span::after {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0; left: 0;
+	bottom: 0; right: 0;
+	margin: auto;
+	height: 32px;
+	width: 32px;
+	border: 2px solid var(--loader-color);
+	border-radius: 50%;
+	opacity: 0;
+	-webkit-animation: loader-6-1 1.5s cubic-bezier(0.075, 0.820, 0.165, 1.000) infinite;
+	        animation: loader-6-1 1.5s cubic-bezier(0.075, 0.820, 0.165, 1.000) infinite;
+}
+@-webkit-keyframes loader-6-1 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(0); opacity: 1; }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1.5); opacity: 0; }
+}
+@keyframes loader-6-1 {
+	0%   { transform: translate3d(0, 0, 0) scale(0); opacity: 1; }
+	100% { transform: translate3d(0, 0, 0) scale(1.5); opacity: 0; }
+}
+.loader-6 span::after {
+	-webkit-animation: loader-6-2 1.5s cubic-bezier(0.075, 0.820, 0.165, 1.000) .25s infinite;
+	        animation: loader-6-2 1.5s cubic-bezier(0.075, 0.820, 0.165, 1.000) .25s infinite;
+}
+@-webkit-keyframes loader-6-2 {
+	0%   { -webkit-transform: translate3d(0, 0, 0) scale(0); opacity: 1; }
+	100% { -webkit-transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+}
+@keyframes loader-6-2 {
+	0%   { transform: translate3d(0, 0, 0) scale(0); opacity: 1; }
+	100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+}
+// #endregion preloaders#
