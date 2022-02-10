@@ -259,12 +259,11 @@ type ValidatedToken = { pin: string } | { validator: string, url: string };
       const token = route.query.token;
 
       try {
-        const data = await app.$axios.$get('apps/token', { params: { token } });
+        const data = await app.$axios.$get('application/token', { params: { token } });
 
         return {
           emitter: data.emitter,
           rights: data.rights,
-          emitted_at: new Date(data.emitted_at),
         };
       } catch (e: any) {
         // tant pis :(
@@ -272,17 +271,16 @@ type ValidatedToken = { pin: string } | { validator: string, url: string };
       }
     }
 
-    return { emitted_at: new Date, emitter: null, rights: {} };
+    return { emitter: null, rights: {} };
   },
   layout: 'empty',
 })
 export default class extends Vue {
   emitter!: null | string;
-  emitted_at!: Date;
   rights!: { [name: string]: string };
 
   loading = false;
-  pin: string | null = null;
+  pin: string | null = null;
   denied = false;
 
   get white_logo() {
@@ -309,7 +307,7 @@ export default class extends Vue {
 
   get permissions() {
     return allowedPermissions
-      .filter(option => this.rights[option] === 'true')
+      .filter(option => this.rights[option])
       .map(option => [option, this.$t('end_user_permissions.' + option)]);
   }
 
@@ -320,7 +318,7 @@ export default class extends Vue {
     this.loading = true;
 
     try {
-      const verification: ValidatedToken = await this.$axios.$post('apps/approve', { token: this.token });
+      const verification: ValidatedToken = await this.$axios.$post('application/approve', { token: this.token });
 
       if ('pin' in verification) {
         // Pin check
@@ -344,7 +342,7 @@ export default class extends Vue {
     this.loading = true;
 
     try {
-      const verification: { denied: boolean | string } = await this.$axios.$post('apps/approve', { deny: this.token });
+      const verification: { denied: boolean | string } = await this.$axios.$post('application/approve', { deny: this.token });
 
       if (typeof verification.denied === 'boolean') {
         // Pin check

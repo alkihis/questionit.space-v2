@@ -520,9 +520,9 @@
 
           <!-- Questions -->
           <div v-if="display_mode === 'answers'">
-            <div class="box" v-if="answers && answers.length">
+            <div class="box" v-if="answers && answers.items.length">
               <question-card
-                v-for="item in (answers || [])"
+                v-for="item in answers.items"
                 :key="item.id"
                 :question="item"
                 :allowPin="is_self"
@@ -530,7 +530,7 @@
                 @destroy="destroyQuestion(item)"
               />
             </div>
-            <div v-if="answers && answers.length === 0" class="no-results">
+            <div v-if="answers && answers.items.length === 0" class="no-results">
               <p class="nanum">
                 {{ $t('no_answer') }}.
               </p>
@@ -741,16 +741,14 @@ import BulmaModal from '~/components/BulmaModal/BulmaModal';
 import { StateChanger } from 'vue-infinite-loading';
 import UserCard from '~/components/UserCard.vue';
 import CropModal from '~/components/CropModal/CropModal';
-import { AxiosResponse } from 'axios';
 import AccountChooser from '~/components/AccountChooser/AccountChooser';
 import QuestionTextArea from '~/components/QuestionTextArea/QuestionTextArea';
 // @ts-ignore
 import PullLoader from '~/components/PullLoader.vue';
 import AskQuestion from '~/components/AskQuestion/AskQuestion';
-import { ISentQuestion, ISentRelationship, ISentUser } from "~/utils/types/sent.entities.types";
+import { IPaginatedWithIdsResult, ISentQuestion, ISentRelationship, ISentUser } from "~/utils/types/sent.entities.types";
 
 export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
-export const NAME_REGEX = /^.{2,32}$/i;
 
 @Component({
   components: {
@@ -775,30 +773,20 @@ export const NAME_REGEX = /^.{2,32}$/i;
     try {
       let user: ISentUser;
       if (slug.match(/^[0-9]+$/)) {
-        user = (await app.$axios.get('users/id/' + slug)).data as ISentUser;
+        user = (await app.$axios.get('user/id/' + slug)).data as ISentUser;
       }
       else {
-        user = (await app.$axios.get('users/slug/' + slug)).data as ISentUser;
+        user = (await app.$axios.get('user/slug/' + slug)).data as ISentUser;
       }
 
       // Get answers
-      const answers_res: Promise<AxiosResponse<ISentQuestion[]>> = app.$axios.get('questions', { params: { user_id: user.id } });
+      const answers: IPaginatedWithIdsResult<ISentQuestion> = await app.$axios.$get('question/answer/user/' + user.id);
 
       // Get relationship
-      let relationship_res: Promise<AxiosResponse<ISentRelationship>> | null = null;
       let relationship: ISentRelationship;
 
-      if (app.$accessor.isLogged && user.id !== app.$accessor.loggedUser!.id) {
-        relationship_res = app.$axios.get('relationships/with/' + user.id);
-      }
-
-      // Await the requests
-      await Promise.all<any>([answers_res, relationship_res || Promise.resolve()]);
-
-      const answers = (await answers_res).data;
-
-      if (relationship_res) {
-        relationship = (await relationship_res).data;
+      if (user.relationship) {
+        relationship = user.relationship;
       }
       else {
         // Create a stub
@@ -822,7 +810,7 @@ export const NAME_REGEX = /^.{2,32}$/i;
 })
 export default class extends Vue {
   user: ISentUser | null = null;
-  answers: ISentQuestion[] | null = null;
+  answers: IPaginatedWithIdsResult<ISentQuestion> | null = null;
   relationship: ISentRelationship | null = null;
   error: any = null;
 
@@ -1053,28 +1041,20 @@ export default class extends Vue {
     try {
       this.is_pull_refreshing = true;
 
-      const user_res: Promise<ISentUser> = this.$axios.$get('users/id/' + this.user!.id);
+      const user_res: ISentUser = await this.$axios.$get('user/id/' + this.user!.id);
 
       // Get answers
-      const answers_res: Promise<ISentQuestion[]> = this.$axios.$get(
-        'questions', {
-          params: {
-            user_id: this.user!.id,
-            since: this.answers?.length ? this.answers[0].id : '0',
-          }
-        });
-
-      // Get relationship
-      let relationship_res: Promise<ISentRelationship> | null = null;
-
-      if (this.$accessor.isLogged && this.user!.id !== this.$accessor.loggedUser!.id) {
-        relationship_res = this.$axios.$get('relationships/with/' + this.user!.id);
-      }
+      const answers_res: IPaginatedWithIdsResult<ISentQuestion> = await this.$axios.$get(
+      'question/answer/user/' + this.user!.id, {
+        params: {
+          sinceId: this.answers?.items.length ? this.answers.items[0].id : '0',
+        },
+      });
 
       // Save requests data
-      this.user = await user_res;
-      this.answers = [...(await answers_res), ...this.answers!];
-      let relationship = await relationship_res;
+      this.user = user_res;
+      this.answers!.items = [...answers_res.items, ...this.answers!.items];
+      let relationship = this.user.relationship;
 
       if (!relationship) {
         // Create a stub
@@ -1105,11 +1085,11 @@ export default class extends Vue {
 
   questionHasBeenLiked(question: ISentQuestion) {
     if (this.answers) {
-      const found = this.answers.findIndex(q => q.id === question.id);
+      const found = this.answers.items.findIndex(q => q.id === question.id);
 
       if (found !== -1) {
-        this.answers[found].answer!.liked = question.answer!.liked;
-        this.answers[found].answer!.likeCount = question.answer!.likeCount;
+        this.answers.items[found].answer!.liked = question.answer!.liked;
+        this.answers.items[found].answer!.likeCount = question.answer!.likeCount;
       }
     }
   }
@@ -1139,7 +1119,7 @@ export default class extends Vue {
 
     try {
       await this.$axios.delete('questions', { params: { question: id } });
-      this.answers = this.answers?.filter(e => e.id !== id) ?? null;
+      this.answers!.items = this.answers?.items.filter(e => e.id !== id) ?? [];
 
       // If deleted question is pinned question
       if (this.user?.pinnedQuestion && this.user.pinnedQuestion.id === id) {
@@ -1367,19 +1347,19 @@ export default class extends Vue {
   /* LOADERS */
 
   async loadAnswers($state: StateChanger) {
-    if (!this.user || !this.answers || !this.answers.length || this.answers_complete) {
+    if (!this.user || !this.answers || !this.answers.items.length || this.answers_complete) {
       this.answers_complete = true;
       $state.complete();
       return;
     }
 
     try {
-      const last_id = this.answers[this.answers.length - 1].id;
+      const last_id = this.answers.items[this.answers.items.length - 1].id;
       // Get answers
-      const new_answers = (await this.$axios.get('questions', { params: { user_id: this.user!.id, until: last_id } })).data as ISentQuestion[];
+      const new_answers = await this.$axios.$get('question/answer/user/' + this.user!.id, { params: { untilId: last_id } }) as IPaginatedWithIdsResult<ISentQuestion>;
 
-      if (new_answers.length) {
-        this.answers = [...this.answers, ...new_answers];
+      if (new_answers.items.length) {
+        this.answers.items = [...this.answers.items, ...new_answers.items];
         $state.loaded();
       }
       else {
@@ -1551,9 +1531,9 @@ export default class extends Vue {
       if (new_slug)
         fd.set('slug', new_slug)
       if (new_ask_me)
-        fd.set('ask_me_message', new_ask_me)
+        fd.set('askMeMessage', new_ask_me)
       if (new_anon !== undefined)
-        fd.set('allow_anonymous', String(new_anon));
+        fd.set('allowAnonymousQuestions', String(new_anon));
 
       if (this.new_banner) {
         fd.set('background', this.new_banner);
@@ -1562,7 +1542,7 @@ export default class extends Vue {
         fd.set('avatar', this.new_pp);
       }
 
-      const resp = await this.$axios.post('users/profile', fd);
+      const resp = await this.$axios.post('user/settings', fd);
 
       const modified = resp.data as ISentUser;
 

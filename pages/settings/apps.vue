@@ -16,8 +16,8 @@
       </div>
     </section>
 
-    <fluid-container v-if="apps" class="root">
-      <div class="apps">
+    <fluid-container class="root">
+      <div v-if="!error" class="apps">
         <application-card
           v-for="app in apps"
           :key="app.id"
@@ -29,12 +29,14 @@
           {{ $t('your_account_isnt_linked_to_any_app') }}
         </p>
       </div>
-    </fluid-container>
-    <fluid-container v-else>
-      Unable to load apps.
+      <div v-else>
+        <p class="no-apps">
+          Unable to load apps.
+        </p>
+      </div>
     </fluid-container>
 
-    <bulma-modal :open="!!delete_app" :card="true" @close="cancelDeleteApplication">
+    <bulma-modal :open="!!deleteAppId" :card="true" @close="cancelDeleteApplication">
       <header class="modal-card-head">
         <p class="modal-card-title">{{ $t('delete_app_subscription') }}</p>
         <button class="delete" aria-label="close" @click="cancelDeleteApplication"></button>
@@ -50,8 +52,8 @@
       <footer class="modal-card-foot is-flex-right">
         <button class="button" @click="cancelDeleteApplication">{{ $t('cancel') }}</button>
         <button
-          :disabled="delete_load"
-          :class="{ 'button': true, 'is-danger': true, 'is-loading': delete_load }"
+          :disabled="deleteLoading"
+          :class="{ 'button': true, 'is-danger': true, 'is-loading': deleteLoading }"
           @click="deleteApplication"
         >{{ $t('delete') }}</button>
       </footer>
@@ -63,7 +65,7 @@
 import { Vue, Component } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
 import { makeTitle, handleError, isAxiosError, convertAxiosError } from '~/utils/helpers';
-import ApplicationCard from '~/components/ApplicationCard/ApplicationCard';
+import ApplicationCard from '~/components/pages/settings/apps/ApplicationCard.vue';
 import { ISentRegistredApplication } from "~/utils/types/sent.entities.types";
 
 @Component({
@@ -75,14 +77,14 @@ import { ISentRegistredApplication } from "~/utils/types/sent.entities.types";
   layout: 'default_solid',
   async asyncData({ app }) {
     try {
-      const apps = await app.$axios.$get('apps/subscribed');
+      const apps = await app.$axios.$get('application/subscribed');
 
-      return { apps };
+      return { apps, error: null };
     } catch (e: any) {
       if (isAxiosError(e)) {
         e = convertAxiosError(e);
       }
-      return { error: e };
+      return { error: e, apps: [] };
     }
   },
 })
@@ -90,8 +92,8 @@ export default class extends Vue {
   apps!: ISentRegistredApplication[];
   error!: any;
 
-  delete_app = 0;
-  delete_load = false;
+  deleteAppId = 0;
+  deleteLoading = false;
 
   head() {
     return {
@@ -100,32 +102,32 @@ export default class extends Vue {
   }
 
   openDeleteApplication(id: number) {
-    this.delete_app = id;
+    this.deleteAppId = id;
   }
 
   cancelDeleteApplication() {
-    if (this.delete_load)
+    if (this.deleteLoading)
       return;
 
-    this.delete_app = 0;
+    this.deleteAppId = 0;
   }
 
   async deleteApplication() {
-    if (this.delete_load || !this.delete_app)
+    if (this.deleteLoading || !this.deleteAppId)
       return;
 
-    this.delete_load = true;
+    this.deleteLoading = true;
 
     try {
-      await this.$axios.$delete('apps/subscribed', { params: { app_id: this.delete_app } });
+      await this.$axios.$delete('application/subscribed/' + this.deleteAppId);
 
-      this.apps = this.apps.filter(app => app.id !== this.delete_app);
-      this.delete_app = 0;
+      this.apps = this.apps.filter(app => app.id !== this.deleteAppId);
+      this.deleteAppId = 0;
     } catch (e) {
       handleError(e, this);
     }
 
-    this.delete_load = false;
+    this.deleteLoading = false;
   }
 }
 </script>

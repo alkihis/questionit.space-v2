@@ -16,35 +16,39 @@
       </div>
     </section>
 
-    <fluid-container v-if="apps" class="root">
-      <div class="apps">
-        <application-card
-          v-for="app in apps"
-          :key="app.id"
-          :app="app"
-          :mine="true"
-          @delete-app="openDeleteApplication"
-          @edit-app="openEditApplication"
-          @regenerate="openRegenerateKey"
-          @test-login-flow="openTestApp"
-        />
+    <fluid-container class="root">
+      <template v-if="!error">
+        <div class="apps">
+          <application-card
+            v-for="app in apps"
+            :key="app.id"
+            :app="app"
+            :mine="true"
+            @delete-app="openDeleteApplication"
+            @edit-app="openEditApplication"
+            @regenerate="openRegenerateKey"
+            @test-login-flow="openTestApp"
+          />
 
-        <p v-if="apps.length === 0" class="no-apps">
-          {{ $t('you_dont_have_created_any_app') }}
+          <p v-if="apps.length === 0" class="no-apps">
+            {{ $t('you_dont_have_created_any_app') }}
+          </p>
+        </div>
+
+        <div class="create-app">
+          <a href="#!" @click="createApplication">{{ $t('create_an_app') }}</a>
+          •
+          <a href="https://docs.questionit.space" rel="noopener noreferrer">{{ $t('documentation') }}</a>
+        </div>
+      </template>
+      <div v-else>
+        <p class="no-apps">
+          Unable to load apps.
         </p>
       </div>
-
-      <div class="create-app">
-        <a href="#!" @click="createApplication">{{ $t('create_an_app') }}</a>
-        •
-        <a href="https://docs.questionit.space" rel="noopener noreferrer">{{ $t('documentation') }}</a>
-      </div>
-    </fluid-container>
-    <fluid-container v-else>
-      Unable to load apps.
     </fluid-container>
 
-    <bulma-modal :open="!!delete_app" :card="true" @close="cancelDeleteApplication">
+    <bulma-modal :open="!!deleteAppId" :card="true" @close="cancelDeleteApplication">
       <header class="modal-card-head">
         <p class="modal-card-title">{{ $t('delete_app') }}</p>
         <button class="delete" aria-label="close" @click="cancelDeleteApplication"></button>
@@ -60,14 +64,14 @@
       <footer class="modal-card-foot is-flex-right">
         <button class="button" @click="cancelDeleteApplication">{{ $t('cancel') }}</button>
         <button
-          :disabled="delete_load"
-          :class="{ 'button': true, 'is-danger': true, 'is-loading': delete_load }"
+          :disabled="deleteAppLoad"
+          :class="{ 'button': true, 'is-danger': true, 'is-loading': deleteAppLoad }"
           @click="deleteApplication"
         >{{ $t('delete') }}</button>
       </footer>
     </bulma-modal>
 
-    <bulma-modal :open="!!regenerate" :card="true" @close="closeRegenerateKey">
+    <bulma-modal :open="!!regenerateAppId" :card="true" @close="closeRegenerateKey">
       <header class="modal-card-head">
         <p class="modal-card-title">{{ $t('regenerate') }}</p>
         <button class="delete" aria-label="close" @click="closeRegenerateKey"></button>
@@ -83,35 +87,35 @@
       <footer class="modal-card-foot is-flex-right">
         <button class="button" @click="closeRegenerateKey">{{ $t('cancel') }}</button>
         <button
-          :disabled="delete_load"
-          :class="{ 'button': true, 'is-danger': true, 'is-loading': delete_load }"
+          :disabled="deleteAppLoad"
+          :class="{ 'button': true, 'is-danger': true, 'is-loading': deleteAppLoad }"
           @click="regenerateKey"
         >{{ $t('regenerate') }}</button>
       </footer>
     </bulma-modal>
 
     <application-editor
-      :app="edit_app"
-      :mode="edit_mode"
+      :app="editedApplication"
+      :mode="editMode"
       @close="cancelEditApplication"
       @created="createdApplication"
-      @edited="editedApplication"
+      @edited="editApplication"
     />
 
-    <bulma-modal :open="!!test_app" :card="true" @close="closeTestApp">
+    <bulma-modal :open="!!testApplication" :card="true" @close="closeTestApp">
       <header class="modal-card-head">
         <p class="modal-card-title">{{ $t('test_login_flow') }}</p>
         <button class="delete" aria-label="close" @click="closeTestApp"></button>
       </header>
 
-      <section class="modal-card-body">
+      <section v-if="testApplication" class="modal-card-body">
         <!-- Content -->
-        <div v-if="test_final_token">
+        <div v-if="testApplication.finalToken">
           <p class="test-generated-header">
             {{ $t('generated_test_data') }}
           </p>
 
-          <pre class="test-generated-data">{{ test_final_token }}</pre>
+          <pre class="test-generated-data">{{ testApplication.finalToken }}</pre>
         </div>
         <div v-else>
           <div class="field">
@@ -121,8 +125,8 @@
               <input
                 class="input"
                 type="text"
-                v-model="test_pin"
-                :disabled="test_started"
+                v-model="testApplication.pin"
+                :disabled="testApplication.started"
               />
             </div>
           </div>
@@ -144,23 +148,31 @@
 import { Vue, Component } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
 import { makeTitle, handleError, isAxiosError, convertAxiosError, QUESTION_IT_REAL_URL } from '~/utils/helpers';
-import ApplicationCard from '~/components/ApplicationCard/ApplicationCard';
-import ApplicationEditor from '~/components/ApplicationEditor/ApplicationEditor';
+import ApplicationCard from '~/components/pages/settings/apps/ApplicationCard.vue';
+import ApplicationEditor from '~/components/pages/settings/apps/ApplicationEditor.vue';
 import { allowedPermissions, ISentApplication } from "~/utils/types/sent.entities.types";
+
+interface ITestApplication {
+  application: ISentApplication;
+  pin: string;
+  token: string;
+  finalToken: string;
+  started: boolean;
+}
 
 @Component({
   components: {
-    BulmaModal: BulmaModal,
-    ApplicationCard: ApplicationCard,
-    ApplicationEditor: ApplicationEditor,
+    BulmaModal,
+    ApplicationCard,
+    ApplicationEditor,
   },
   middleware: 'logged',
   layout: 'default_solid',
   async asyncData({ app }) {
     try {
-      const apps = await app.$axios.$get('apps');
+      const apps = await app.$axios.$get('application');
 
-      return { apps };
+      return { apps, error: null };
     } catch (e) {
       if (isAxiosError(e)) {
         e = convertAxiosError(e);
@@ -173,20 +185,16 @@ export default class extends Vue {
   apps!: ISentApplication[];
   error!: any;
 
-  delete_app = 0;
-  delete_load = false;
+  deleteAppId = 0;
+  deleteAppLoad = false;
 
-  edit_app: ISentApplication | null = null;
-  edit_mode: 'create' | 'edit' = 'create';
+  editedApplication: ISentApplication | null = null;
+  editMode: 'create' | 'edit' = 'create';
 
-  regenerate: string | null = null;
-  regenerate_load = false;
+  regenerateAppId: string | null = null;
+  regeneratePinLoad = false;
 
-  test_app: number | null = null;
-  test_pin: string = '';
-  test_token: string = '';
-  test_final_token: string = '';
-  test_started = false;
+  testApplication: ITestApplication | null = null;
 
   head() {
     return {
@@ -208,151 +216,150 @@ export default class extends Vue {
       fake.rights[permission] = false;
     }
 
-    this.edit_app = fake;
-    this.edit_mode = 'create';
+    this.editedApplication = fake;
+    this.editMode = 'create';
   }
 
   openEditApplication(id: number) {
     const app = this.apps.find(app => app.id === id) ?? null;
-    this.edit_mode = 'edit';
+    this.editMode = 'edit';
 
     if (app) {
-      this.edit_app = { ...app };
-      this.edit_app.rights = { ...app.rights };
+      this.editedApplication = { ...app };
+      this.editedApplication.rights = { ...app.rights };
     }
   }
 
   cancelEditApplication() {
-    this.edit_app = null;
+    this.editedApplication = null;
   }
 
   createdApplication(app: ISentApplication) {
     this.apps.push(app);
-    this.edit_app = null;
+    this.editedApplication = null;
   }
 
-  editedApplication(app: ISentApplication) {
+  editApplication(app: ISentApplication) {
     this.apps = this.apps.map(a => a.id === app.id ? app : a);
-    this.edit_app = null;
+    this.editedApplication = null;
   }
 
   openDeleteApplication(id: number) {
-    this.delete_app = id;
+    this.deleteAppId = id;
   }
 
   cancelDeleteApplication() {
-    if (this.delete_load)
+    if (this.deleteAppLoad)
       return;
 
-    this.delete_app = 0;
+    this.deleteAppId = 0;
   }
 
   async deleteApplication() {
-    if (this.delete_load || !this.delete_app)
+    if (this.deleteAppLoad || !this.deleteAppId)
       return;
 
-    this.delete_load = true;
+    this.deleteAppLoad = true;
 
     try {
-      await this.$axios.$delete('apps', { params: { app_id: this.delete_app } });
+      await this.$axios.$delete('application/' + this.deleteAppId);
 
-      this.apps = this.apps.filter(app => app.id !== this.delete_app);
-      this.delete_app = 0;
+      this.apps = this.apps.filter(app => app.id !== this.deleteAppId);
+      this.deleteAppId = 0;
       this.$toast.success(this.$t('application_delete_success'));
     } catch (e) {
       handleError(e, this);
     }
 
-    this.delete_load = false;
+    this.deleteAppLoad = false;
   }
 
   openRegenerateKey(id: string) {
-    if (this.regenerate_load)
+    if (this.regeneratePinLoad)
       return;
 
-    this.regenerate = id;
+    this.regenerateAppId = id;
   }
 
   closeRegenerateKey() {
-    if (this.regenerate_load)
+    if (this.regeneratePinLoad)
       return;
 
-    this.regenerate = null;
+    this.regenerateAppId = null;
   }
 
   async regenerateKey() {
-    if (this.regenerate_load || !this.regenerate)
+    if (this.regeneratePinLoad || !this.regenerateAppId)
       return;
 
-    this.regenerate_load = true;
+    this.regeneratePinLoad = true;
 
     try {
-      const app: ISentApplication = await this.$axios.$patch('apps/regenerate', { id: this.regenerate });
+      const app: ISentApplication = await this.$axios.$patch(`application/${this.regenerateAppId}/regenerate-key`);
 
       this.apps = this.apps.map(a => a.id === app.id ? app : a);
-      this.regenerate = null;
+      this.regenerateAppId = null;
       this.$toast.success(this.$t('regenerate_success'));
     } catch (e) {
       handleError(e, this);
     }
 
-    this.regenerate_load = false;
+    this.regeneratePinLoad = false;
   }
 
-  async openTestApp(app: number) {
-    if (this.test_app)
+  async openTestApp(appId: number) {
+    if (this.testApplication)
       return;
 
-    const app_obj = this.apps.find(a => a.id === app);
+    const application = this.apps.find(a => a.id === appId);
 
-    if (!app_obj)
+    if (!application)
       return;
 
-
-    this.test_app = app;
-    this.test_pin = '';
-    this.test_final_token = '';
+    this.testApplication = {
+      application,
+      pin: '',
+      finalToken: '',
+      token: '',
+      started: false,
+    };
 
     try {
-      const data = await this.$axios.$post('apps/token', { key: app_obj.key, url: 'oob' });
+      const data = await this.$axios.$post('application/token', { key: application.key, url: 'oob' });
       const url = QUESTION_IT_REAL_URL + '/appflow?token=' + encodeURIComponent(data.token);
-      this.test_token = data.token;
+      this.testApplication.token = data.token;
 
       // Open appflow into another tab
       window.open(url, '_blank');
     } catch (e) {
       handleError(e, this);
-      this.test_app = null;
+      this.testApplication = null;
     }
   }
 
   async confirmTestApp() {
-    if (!this.test_app)
-      return;
-
-    const app_obj = this.apps.find(a => a.id === this.test_app);
-
-    if (!app_obj)
+    if (!this.testApplication)
       return;
 
     try {
-      this.test_started = true;
-      const data = await this.$axios.$post('auth/token/create', { key: app_obj.key, token: this.test_token, validator: this.test_pin });
+      this.testApplication.started = true;
+      const data = await this.$axios.$post('token/create', {
+        key: this.testApplication.application.key,
+        token: this.testApplication.token,
+        validator: this.testApplication.pin,
+      });
 
       // Finally ok
-      this.test_final_token = JSON.stringify(data, null, 2);
+      this.testApplication.finalToken = JSON.stringify(data, null, 2);
     } catch (e) {
       handleError(e, this);
     }
 
-    this.test_started = false;
+    this.testApplication.started = false;
   }
 
   closeTestApp() {
-    this.test_app = null;
-    this.test_started = false;
-    this.test_final_token = '';
-    this.test_pin = '';
+    this.testApplication = null;
   }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
-  <div :class="{ 
-    'card': true, 
-    'app-card': true, 
+  <div :class="{
+    'card': true,
+    'app-card': true,
   }">
     <div class="card-content">
       <div class="media">
@@ -17,10 +17,10 @@
       <div class="content nanum">
         <p v-if="small" class="text-content">
           <span v-if="mine">
-            {{ $t('dev_this_application_has_x_rights', { right: right_count, s: right_count > 1 ? 's' : '' }) }}
+            {{ $t('dev_this_application_has_x_rights', { right: rightCount, s: rightCount > 1 ? 's' : '' }) }}
           </span>
           <span v-else>
-            {{ $t('this_application_has_x_rights', { right: right_count, s: right_count > 1 ? 's' : '' }) }}
+            {{ $t('this_application_has_x_rights', { right: rightCount, s: rightCount > 1 ? 's' : '' }) }}
           </span>
         </p>
         <div v-else class="text-full-content">
@@ -59,11 +59,11 @@
               - {{ $t('read_profile_informations') }}
             </li>
 
-            <li v-for="option in (mine ? dev_permissions : permissions)" :key="option[0]" class="auth-option">
+            <li v-for="option in (mine ? devPermissions : permissions)" :key="option[0]" class="auth-option">
               - {{ option[1] }}
             </li>
           </ul>
-        </div>  
+        </div>
       </div>
 
       <div class="app-card-footer">
@@ -73,7 +73,7 @@
         </div>
 
         <div class="app-buttons">
-          <button 
+          <button
             v-if="mine"
             :class="{ 'button': true, 'is-link': true }"
             @click="$emit('edit-app', app.id)"
@@ -81,7 +81,7 @@
             {{ $t('edit') }}
           </button>
 
-          <button 
+          <button
             :class="{ 'button': true, 'is-danger': true }"
             @click="$emit('delete-app', app.id)"
           >
@@ -93,9 +93,45 @@
   </div>
 </template>
 
+<script lang="ts">
+import { Component, Prop, Vue } from "nuxt-property-decorator";
+import { allowedPermissions, ISentApplication, ISentRegistredApplication } from "~/utils/types/sent.entities.types";
+
+@Component({})
+export default class extends Vue {
+  @Prop({ required: true })
+  app!: ISentRegistredApplication | ISentApplication;
+
+  @Prop({ type: Boolean, default: false })
+  mine!: boolean;
+
+  small = true;
+
+  toggle() {
+    this.small = !this.small;
+  }
+
+  get rightCount() {
+    return Object.values(this.app.rights).filter(value => value).length + 1;
+  }
+
+  get permissions() {
+    return allowedPermissions
+      .filter(option => this.app.rights[option])
+      .map(option => [option, this.$t('end_user_permissions.' + option)]);
+  }
+
+  get devPermissions() {
+    return allowedPermissions
+      .filter(option => this.app.rights[option])
+      .map(option => [option, this.$t('developer_user_permissions.' + option)]);
+  }
+}
+</script>
+
 <style lang="scss" scoped>
   @import '~/assets/css/functions.scss';
-  
+
   .app-card {
     opacity: 1;
   }
@@ -192,5 +228,3 @@
     cursor: pointer;
   }
 </style>
-
-<script lang="ts" src="./ApplicationCard.ts"></script>
