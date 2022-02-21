@@ -6,6 +6,7 @@ import { isAxiosError, TOKEN_UNVALIDATED_500_ERROR } from '~/utils/helpers';
 import { ISentUser } from "~/utils/types/sent.entities.types";
 import { EAllowedThemes } from "~/utils/types/theme.types";
 import '~/utils/types/globals.types';
+import * as profile from './profile';
 
 interface GlobalState {
   /** Active token */
@@ -278,5 +279,6 @@ export const accessorType = getAccessorType({
   actions,
   modules: {
     // The key (submodule) needs to match the Nuxt namespace (e.g. ~/store/submodule.ts)
+    profile,
   },
 });

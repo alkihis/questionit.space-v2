@@ -1,11 +1,11 @@
 <template>
   <div>
-    <main v-if="user" class="user-root">
+    <main v-if="$accessor.profile.user" class="user-root">
       <nuxt-child
-        v-if="$route.params.question && user && !relationship.isBlockedBy"
+        v-if="$route.params.question && !$accessor.profile.relationship.isBlockedBy"
         :key="$route.params.question"
-        :allowReplies="!relationship.hasBlocked"
-        :allowPin="is_self"
+        :allowReplies="!$accessor.profile.relationship.hasBlocked"
+        :allowPin="$accessor.profile.isSelf"
         @destroy="destroyQuestion"
         @like="questionHasBeenLiked"
         @pin="willPin($event)"
@@ -13,404 +13,7 @@
 
       <!-- Pull to refresh on mobile -->
       <pull-loader :method="pullRefresh">
-        <header class="profile-header" :style="'background-image: url(\'' + user.bannerPictureUrl + '\');'">
-          <!-- Pen edit banner -->
-          <div v-if="edit" class="edit-overlay clickable" @click="clickOnModifyBanner">
-            <div class="pen-icon-edit-banner">
-              <span class="icon has-text-white">
-                <i class="fas fa-pen"></i>
-              </span>
-            </div>
-          </div>
 
-          <div class="profile">
-            <div class="profile-user-picture" :style="'background-image: url(\'' + user.profilePictureUrl + '\');'">
-              <!-- Pen edit profile picture -->
-              <div v-if="edit" class="edit-overlay clickable" @click="clickOnModifyPp" style="border-radius: 25%;">
-                <div class="pen-icon-edit-banner">
-                  <span class="icon has-text-white">
-                    <i class="fas fa-pen"></i>
-                  </span>
-                </div>
-              </div>
-
-              <section class="hero">
-                <p class="title nanum">
-                  {{ user.name }}
-                </p>
-                <p class="subtitle nanum">
-                  @{{ user.slug }}
-                  <a :href="twitter_link" rel="noopener noreferrer" target="_blank" class="icon twitter-icon has-text-info">
-                    <i class="fab fa-twitter-square"></i>
-                  </a>
-                </p>
-              </section>
-            </div>
-          </div>
-        </header>
-
-        <!-- Mobile profile body: Btn placement, no tooltip -->
-        <section class="profile-edit-button" style="margin-bottom: 1rem">
-          <!-- Edition -->
-          <div v-if="edit" style="margin: 0 1rem 1rem 1rem;">
-            <!-- Name field -->
-            <div class="field">
-              <label class="label">{{ $t('full_name') }}</label>
-              <div :class="{ control: true, 'is-loading': edit_load }">
-                <input :disabled="edit_load" :class="{ input: true, 'is-danger': username.length > 32 }" type="text" placeholder="Name" v-model="username">
-              </div>
-            </div>
-
-            <!-- Slug field -->
-            <div class="field">
-              <label class="label">{{ $t('user_name') }}</label>
-
-              <div :class="{
-                control: true,
-                'is-loading': is_slug_loading,
-                'has-icons-right': slug_available !== null && !is_slug_loading
-              }">
-                <input
-                  :disabled="edit_load"
-                  :class="{
-                    input: true,
-                    'is-danger': slug.length > 20 || slug_invalid,
-                    'is-success': slug_available === 'available' && slug.length <= 20
-                  }"
-                  type="text"
-                  v-model="slug"
-                >
-                <span v-if="slug_available === 'available' && !is_slug_loading" class="icon is-small is-right">
-                  <i class="fas fa-check"></i>
-                </span>
-                <span v-else-if="slug_invalid && !is_slug_loading" class="icon is-small is-right">
-                  <i class="fas fa-ban"></i>
-                </span>
-              </div>
-
-              <p v-if="slug_available === 'available'" class="help is-success">
-                {{ $t('username_available') }}.
-              </p>
-              <p v-else-if="slug_available === false" class="help is-danger">
-                {{ $t('username_not_available') }}.
-              </p>
-              <p v-else-if="slug_available === 'invalid'" class="help is-danger">
-                {{ $t('invalid_username') }}.
-              </p>
-            </div>
-
-            <!-- Ask me field -->
-            <div class="field">
-              <label class="label">{{ $t('ask_me_message') }}</label>
-              <div :class="{ control: true, 'is-loading': edit_load }">
-                <input
-                  :disabled="edit_load"
-                  :class="{ input: true, 'is-danger': ask_me_message.length > 60 }"
-                  type="text"
-                  v-model="ask_me_message"
-                />
-              </div>
-            </div>
-
-            <!-- Allow anon field -->
-            <div class="field">
-              <input
-                type="checkbox"
-                class="is-checkradio is-circle is-info"
-                id="anon-mobile"
-                value="anonymous"
-                v-model="allow_anonymous"
-                :disabled="edit_load"
-              >
-              <label class="checkbox" for="anon-mobile">
-                {{ $t('allow_anonymous') }}
-              </label>
-            </div>
-
-            <!-- Resync with Twitter -->
-            <div class="field sync-with-twitter has-text-link">
-              <span class="icon twitter-icon">
-                <i class="fas fa-sync-alt"></i>
-              </span>
-
-              <span class="clickable with-underline" @click="willRefreshProfile">
-                {{ $t('resync_pp_twitter') }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Relationships: Block/Unblocks/Follow btn -->
-          <div v-if="!edit && $accessor.isLogged" class="mobile-no-edit-buttons">
-            <div v-if="relationship.following || relationship.followedBy" class="tags mobile-followings">
-              <span v-if="relationship.following && relationship.followedBy" class="tag is-link">{{ $t('mutual_following') }}</span>
-              <span v-else-if="relationship.following" class="tag is-link">{{ $t('single_following') }}</span>
-              <span v-else-if="relationship.followedBy" class="tag is-link">{{ $t('is_followed_by') }}</span>
-            </div>
-
-            <div v-if="!is_self">
-              <button v-if="!relationship.hasBlocked" class="button" @click="willblockUnblock()">
-                <span class="icon is-small">
-                  <i class="fas fa-user-slash has-text-danger"></i>
-                </span>
-                <span>
-                  {{ $t('block') }}
-                </span>
-              </button>
-              <button v-else class="button" @click="willblockUnblock()">
-                <span class="icon is-small">
-                  <i class="fas fa-user-shield has-text-danger"></i>
-                </span>
-                <span>
-                  {{ $t('unblock') }}
-                </span>
-              </button>
-
-              <div v-if="!relationship.isBlockedBy" class="follow-btns-mobile">
-                <button v-if="!relationship.following && !relationship.hasBlocked" class="button" @click="follow()">
-                  <span class="icon is-small">
-                    <i class="fas fa-user-plus has-text-info"></i>
-                  </span>
-                  <span>
-                  {{ $t('follow') }}
-                </span>
-                </button>
-                <button v-else-if="!relationship.hasBlocked" class="button" @click="unfollow()">
-                  <span class="icon is-small">
-                    <i class="fas fa-user-minus has-text-info"></i>
-                  </span>
-                  <span>
-                  {{ $t('unfollow') }}
-                </span>
-                </button>
-              </div>
-            </div>
-            <!-- Edition button -->
-            <div v-else>
-              <button class="button" @click="startEdition()">
-                <span class="icon is-small">
-                  <i class="fas fa-edit"></i>
-                </span>
-                <span>
-                  {{ $t('edit_profile') }}
-                </span>
-              </button>
-
-              <nuxt-link :to="localePath('/settings')">
-                <button class="button" style="margin-top: .5rem">
-                  <span class="icon is-small">
-                    <i class="fas fa-cog"></i>
-                  </span>
-                  <span>
-                    {{ $t('account_settings') }}
-                  </span>
-                </button>
-              </nuxt-link>
-            </div>
-          </div>
-
-          <div v-if="edit">
-            <button
-              :class="{ 'button': true, 'is-loading': edit_load }"
-              :disabled="slug_invalid || edit_load"
-              @click="endEdition()"
-              style="margin-bottom: .5rem"
-            >
-              <span v-if="!edit_load" class="icon is-small has-text-success">
-                <i class="fas fa-check"></i>
-              </span>
-              <span>
-                {{ $t('save') }}
-              </span>
-            </button>
-
-            <button class="button" :disabled="edit_load" @click="cancelEdition()">
-              <span class="icon is-small has-text-danger">
-                <i class="fas fa-ban"></i>
-              </span>
-              <span>
-                {{ $t('cancel') }}
-              </span>
-            </button>
-          </div>
-        </section>
-
-        <!-- Desktop profile body: Btn placement, tooltips -->
-        <section class="hero">
-          <div :class="{ 'hero-body': true, 'desktop-body': true, edit: edit }">
-            <fluid-container>
-              <!-- Name -->
-              <div v-if="!edit">
-                <p class="title nanum">
-                  {{ user.name }}
-                </p>
-                <p class="subtitle nanum">
-                  @{{ user.slug }}
-                  <a :href="twitter_link" rel="noopener noreferrer" target="_blank" class="icon twitter-icon has-text-info">
-                    <i class="fab fa-twitter-square"></i>
-                  </a>
-                </p>
-              </div>
-              <!-- Edition fields -->
-              <div v-else style="width: 80%">
-                <!-- Name field -->
-                <div class="field">
-                  <label class="label">{{ $t('full_name') }}</label>
-                  <div :class="{ control: true, 'is-loading': edit_load }">
-                    <input :disabled="edit_load" :class="{ input: true, 'is-danger': username.length > 32 }" type="text" v-model="username">
-                  </div>
-                </div>
-
-                <!-- Slug field -->
-                <div class="field">
-                  <label class="label">{{ $t('user_name') }}</label>
-
-                  <div :class="{
-                    control: true,
-                    'is-loading': is_slug_loading,
-                    'has-icons-right': slug_available !== null && !is_slug_loading
-                  }">
-                    <input
-                      :disabled="edit_load"
-                      :class="{
-                        input: true,
-                        'is-danger': slug.length > 20 || slug_invalid,
-                        'is-success': slug_available === 'available' && slug.length <= 20
-                      }"
-                      type="text"
-                      v-model="slug"
-                    >
-                    <span v-if="slug_available === 'available' && !is_slug_loading" class="icon is-small is-right">
-                      <i class="fas fa-check"></i>
-                    </span>
-                    <span v-else-if="slug_invalid && !is_slug_loading" class="icon is-small is-right">
-                      <i class="fas fa-ban"></i>
-                    </span>
-                  </div>
-
-                  <p v-if="slug_available === 'available'" class="help is-success">
-                    {{ $t('username_available') }}.
-                  </p>
-                  <p v-else-if="slug_available === false" class="help is-danger">
-                    {{ $t('username_not_available') }}.
-                  </p>
-                  <p v-else-if="slug_available === 'invalid'" class="help is-danger">
-                    {{ $t('invalid_username') }}.
-                  </p>
-                </div>
-
-                <!-- Ask me message field -->
-                <div class="field">
-                  <label class="label">{{ $t('ask_me_message') }}</label>
-                  <div :class="{ control: true, 'is-loading': edit_load }">
-                    <input
-                      :disabled="edit_load"
-                      :class="{ input: true, 'is-danger': ask_me_message.length > 60 }"
-                      type="text"
-                      v-model="ask_me_message"
-                    />
-                  </div>
-                </div>
-
-                <!-- Allow anonymous field -->
-                <div class="field">
-                  <input
-                    type="checkbox"
-                    class="is-checkradio is-circle is-info"
-                    value="anonymous"
-                    id="canon"
-                    v-model="allow_anonymous"
-                    :disabled="edit_load"
-                  >
-                  <label class="checkbox" for="canon">
-                    {{ $t('allow_anonymous') }}
-                  </label>
-                </div>
-
-                <!-- Resync with Twitter -->
-                <div class="field sync-with-twitter has-text-link">
-                  <span class="icon twitter-icon">
-                    <i class="fas fa-sync-alt"></i>
-                  </span>
-
-                  <span class="clickable with-underline" @click="willRefreshProfile">
-                    {{ $t('resync_pp_twitter') }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Relationships: Block/Unblocks/Follow btn -->
-              <div v-if="!is_self && $accessor.isLogged" class="flex-end">
-                <div style="text-align: right;">
-                  <button v-if="!relationship.hasBlocked" class="button has-tooltip has-tooltip-top" :data-tooltip="$t('block')" @click="willblockUnblock()">
-                    <span class="icon is-small">
-                      <i class="fas fa-user-slash has-text-danger"></i>
-                    </span>
-                  </button>
-                  <button v-else class="button has-tooltip has-tooltip-top" :data-tooltip="$t('unblock')" @click="willblockUnblock()">
-                    <span class="icon is-small">
-                      <i class="fas fa-user-shield has-text-danger"></i>
-                    </span>
-                  </button>
-                  <span v-if="!relationship.isBlockedBy">
-                    <button v-if="!relationship.following && !relationship.hasBlocked" class="button has-tooltip has-tooltip-top" :data-tooltip="$t('follow')" @click="follow()">
-                      <span class="icon is-small">
-                        <i class="fas fa-user-plus has-text-info"></i>
-                      </span>
-                    </button>
-                    <button v-else-if="!relationship.hasBlocked" class="button has-tooltip has-tooltip-top" :data-tooltip="$t('unfollow')" @click="unfollow()">
-                      <span class="icon is-small">
-                        <i class="fas fa-user-minus has-text-info"></i>
-                      </span>
-                    </button>
-                  </span>
-                </div>
-
-                <div class="tags followings">
-                  <span v-if="relationship.following && relationship.followedBy" class="tag is-link">{{ $t('mutual_following') }}</span>
-                  <span v-else-if="relationship.following" class="tag is-link">{{ $t('single_following') }}</span>
-                  <span v-else-if="relationship.followedBy" class="tag is-link">{{ $t('is_followed_by') }}</span>
-                  <div v-else></div>
-                </div>
-              </div>
-
-              <!-- Edit btn -->
-              <div v-if="is_self && !edit">
-                <button class="button" :data-tooltip="$t('edit')" @click="startEdition()">
-                  <span class="icon is-small">
-                    <i class="fas fa-edit"></i>
-                  </span>
-                </button>
-
-                <nuxt-link :to="localePath('/settings')" :data-tooltip="$t('account_settings')">
-                  <button class="button">
-                    <span class="icon is-small">
-                      <i class="fas fa-cog"></i>
-                    </span>
-                  </button>
-                </nuxt-link>
-              </div>
-
-              <!-- End edit btns -->
-              <div v-if="edit">
-                <button
-                  :class="{ 'button': true, 'is-loading': edit_load }"
-                  :disabled="slug_invalid || edit_load"
-                  @click="endEdition()"
-                >
-                  <span v-if="!edit_load" class="icon is-small has-text-success">
-                    <i class="fas fa-check"></i>
-                  </span>
-                </button>
-
-                <button class="button" :disabled="edit_load" @click="cancelEdition()">
-                  <span class="icon is-small has-text-danger">
-                    <i class="fas fa-ban"></i>
-                  </span>
-                </button>
-              </div>
-            </fluid-container>
-          </div>
-        </section>
 
         <!-- Infos & Questions -->
         <fluid-container v-if="can_show_questions" :class="{ unlogged: !$accessor.isLogged, infos: true }">
@@ -590,7 +193,7 @@
         </fluid-container>
 
         <!-- Has blocked this user; hasn't accepted to show profile -->
-        <fluid-container v-else-if="relationship.hasBlocked && !has_accepted_to_show">
+        <fluid-container v-else-if="relationship.hasBlocked && !hasAcceptedToShow">
           <p class="is-align-center blocked-message">
             {{ $t('you_have_blocked_this_user') }}.
           </p>
@@ -603,87 +206,16 @@
       </pull-loader>
 
       <!-- Modal for question delete -->
-      <bulma-modal :open="!!will_destroy" :card="true" @close="cancelDestroy()">
-        <header class="modal-card-head">
-          <p class="modal-card-title">{{ $t('delete_this_question') }}</p>
-          <button class="delete" aria-label="close" @click="cancelDestroy()"></button>
-        </header>
-        <section class="modal-card-body">
-          <!-- Content -->
-          <p>
-            {{ $t('this_question_will_be_deleted_forever') }}.
-          </p>
-        </section>
-        <footer class="modal-card-foot is-flex-right">
-          <button
-            :disabled="destroy_loading"
-            :class="{ 'button': true, 'is-danger': true, 'is-loading': destroy_loading }"
-            @click="sendDestroyQuestion()"
-          >{{ $t('delete') }}</button>
-          <button class="button" @click="cancelDestroy()">{{ $t('cancel') }}</button>
-        </footer>
-      </bulma-modal>
+      <profile-question-delete-modal :question.sync="deleteQuestionModal" @deleted="onQuestionDeleted" />
 
       <!-- Modal for user block -->
-      <bulma-modal :open="will_block" :card="true" @close="cancelBlock()">
-        <header class="modal-card-head">
-          <p v-if="relationship.hasBlocked" class="modal-card-title">{{ $t('unblock_this_user') }}</p>
-          <p v-else class="modal-card-title">{{ $t('block_this_user') }}</p>
-          <button class="delete" aria-label="close" @click="cancelBlock()"></button>
-        </header>
-        <section class="modal-card-body">
-          <!-- Content -->
-          <p v-if="relationship.hasBlocked">
-            {{ $t('unblock_user_message') }}
-          </p>
-          <p v-else>
-            {{ $t('block_user_message') }}
-          </p>
-        </section>
-        <footer class="modal-card-foot is-flex-right">
-          <button
-            :disabled="will_block === 1"
-            :class="{ button: true, 'is-danger': true, 'is-loading': will_block === 1 }" @click="blockUnblock()"
-          >
-            <span v-if="relationship.hasBlocked">
-              {{ $t('unblock') }}
-            </span>
-            <span v-else>
-              {{ $t('block') }}
-            </span>
-          </button>
-          <button class="button" @click="cancelBlock()">{{ $t('cancel') }}</button>
-        </footer>
-      </bulma-modal>
+      <profile-user-block-modal :user.sync="blockUserModal" />
 
       <!-- Modal for pin question -->
-      <bulma-modal :open="will_pin" :card="true" @close="cancelPin()">
-        <header class="modal-card-head">
-          <p v-if="will_pin.type === 'pin'" class="modal-card-title">{{ $t('pin_question') }}</p>
-          <p v-else class="modal-card-title">{{ $t('unpin_question') }}</p>
-          <button class="delete" aria-label="close" @click="cancelPin()"></button>
-        </header>
-        <section class="modal-card-body">
-          <!-- Content -->
-          <p v-if="will_pin.type === 'pin'">
-            {{ $t('pin_message') }}.
-          </p>
-          <p v-else>
-            {{ $t('unpin_message') }}.
-          </p>
-        </section>
-        <footer class="modal-card-foot is-flex-right">
-          <button class="button" @click="cancelPin()">{{ $t('cancel') }}</button>
-          <button
-            :disabled="pin_loading"
-            :class="{ button: true, 'is-success': true, 'is-loading': pin_loading }"
-            @click="pin()"
-          >{{ $t('validate') }}</button>
-        </footer>
-      </bulma-modal>
+      <profile-pin-question-modal :question.sync="pinQuestionModal" @pinned="onPinnedQuestion" />
 
       <!-- Modal for resync data with twitter profile -->
-      <bulma-modal :open="will_refresh_profile" :card="true" @close="cancelRefreshProfile()">
+      <bulma-modal :open="showRefreshProfile" :card="true" @close="cancelRefreshProfile()">
         <header class="modal-card-head">
           <p class="modal-card-title">{{ $t('resync_pp_twitter') }}</p>
           <button class="delete" aria-label="close" @click="cancelRefreshProfile()"></button>
@@ -697,8 +229,8 @@
         <footer class="modal-card-foot is-flex-right">
           <button class="button" @click="cancelRefreshProfile()">{{ $t('cancel') }}</button>
           <button
-            :disabled="edit_load"
-            :class="{ button: true, 'is-success': true, 'is-loading': edit_load }"
+            :disabled="refreshProfileLoad"
+            :class="{ button: true, 'is-success': true, 'is-loading': refreshProfileLoad }"
             @click="refreshPpWithTwitter()"
           >{{ $t('validate') }}</button>
         </footer>
@@ -746,25 +278,33 @@ import QuestionTextArea from '~/components/QuestionTextArea/QuestionTextArea';
 // @ts-ignore
 import PullLoader from '~/components/PullLoader.vue';
 import AskQuestion from '~/components/AskQuestion/AskQuestion';
-import { IPaginatedWithIdsResult, ISentQuestion, ISentRelationship, ISentUser } from "~/utils/types/sent.entities.types";
+import { IPaginatedWithIdsResult, ISentQuestion, ISentUser } from "~/utils/types/sent.entities.types";
+import ProfilePinQuestionModal, { TQuestionPin } from "~/components/pages/profile/modals/ProfilePinQuestionModal.vue";
+import ProfileQuestionDeleteModal from "~/components/pages/profile/modals/ProfileQuestionDeleteModal.vue";
+import ProfileUserBlockModal from "~/components/pages/profile/modals/ProfileUserBlockModal.vue";
 
 export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
 
 @Component({
   components: {
+    ProfileUserBlockModal,
+    ProfileQuestionDeleteModal,
+    ProfilePinQuestionModal,
     QuestionCard,
     QuestionCardNoReply,
     BulmaModal,
-    UserCard: UserCard,
-    CropModal: CropModal,
-    AccountChooser: AccountChooser,
-    QuestionTextArea: QuestionTextArea,
-    PullLoader: PullLoader,
-    AskQuestion: AskQuestion,
+    UserCard,
+    CropModal,
+    AccountChooser,
+    QuestionTextArea,
+    PullLoader,
+    AskQuestion,
   },
   scrollToTop: false,
   async asyncData({ app, params, redirect }) {
     const slug = params.slug as string;
+
+    app.$accessor.profile.reset();
 
     if (!slug) {
       return redirect(app.localePath('/'));
@@ -779,26 +319,12 @@ export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
         user = (await app.$axios.get('user/slug/' + slug)).data as ISentUser;
       }
 
+      app.$accessor.profile.setUser(user);
+
       // Get answers
       const answers: IPaginatedWithIdsResult<ISentQuestion> = await app.$axios.$get('question/answer/user/' + user.id);
 
-      // Get relationship
-      let relationship: ISentRelationship;
-
-      if (user.relationship) {
-        relationship = user.relationship;
-      }
-      else {
-        // Create a stub
-        relationship = {
-          hasBlocked: false,
-          isBlockedBy: false,
-          followedBy: false,
-          following: false,
-        };
-      }
-
-      return { user, answers, relationship };
+      app.$accessor.profile.setAnswers(answers);
     } catch (error) {
       if (isAxiosError(error) && error.response) {
         error = convertAxiosError(error);
@@ -809,9 +335,6 @@ export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
   layout: 'default',
 })
 export default class extends Vue {
-  user: ISentUser | null = null;
-  answers: IPaginatedWithIdsResult<ISentQuestion> | null = null;
-  relationship: ISentRelationship | null = null;
   error: any = null;
 
   answers_complete = false;
@@ -824,17 +347,16 @@ export default class extends Vue {
   new_banner: File | null = null;
   new_pp: File | null = null;
   crop_modal: false | 'pp' | 'banner' = false;
-  will_refresh_profile = false;
+  showRefreshProfile = false;
+  refreshProfileLoad = false;
 
   /** Needed to open the delete modal */
-  will_destroy: false | number = false;
-  destroy_loading = false;
-  will_block: boolean | 1 = false;
-  will_pin: false | { type: 'pin' | 'unpin', question: number } = false;
-  pin_loading = false;
+  deleteQuestionModal: null | ISentQuestion = null;
+  pinQuestionModal: null | TQuestionPin = null;
+  blockUserModal = false;
 
   // Block information
-  has_accepted_to_show = false;
+  hasAcceptedToShow = false;
 
   // Follow
   is_following = false;
@@ -855,7 +377,7 @@ export default class extends Vue {
 
   head() {
     // todo meta tags info
-    const user = this.user;
+    const user = this.$accessor.profile.user;
 
     if (user) {
       const dscr = `${this.$t('profile_of')} ${user.name} — @${user.slug}, ${user.counts?.answers} questions.`;
@@ -902,10 +424,6 @@ export default class extends Vue {
   }
 
   /* GETTERS FOR PROFILE MODIFICATIONS */
-
-  get is_self() {
-    return this.$accessor.loggedUser && this.$accessor.loggedUser.id === this.user?.id;
-  }
 
   get username() {
     return this.user?.name ?? "";
@@ -985,7 +503,7 @@ export default class extends Vue {
   /* INSTANCE PROPERTIES */
 
   get question_ph() {
-    return this.user?.profileAskMeMessage ?? this.$t('write_question');
+    return this.$accessor.profile.user?.profileAskMeMessage ?? this.$t('write_question');
   }
 
   get is_slug_loading() {
@@ -993,28 +511,19 @@ export default class extends Vue {
   }
 
   get formatted_created_at_date() {
-    return fullDateText(new Date(this.user!.createdAt), this);
+    return fullDateText(new Date(this.$accessor.profile.user!.createdAt), this);
   }
 
   get full_formatted_created_at_date() {
-    return fullDateText(new Date(this.user!.createdAt), this, true);
+    return fullDateText(new Date(this.$accessor.profile.user!.createdAt), this, true);
   }
 
   get can_show_questions() {
-    if (!this.user)
-      return false;
-
-    if (this.relationship && this.relationship.isBlockedBy)
-      return false;
-
-    if (this.relationship && this.relationship.hasBlocked && !this.has_accepted_to_show)
-      return false;
-
-    return true;
+    return this.$accessor.profile.canShowQuestions;
   }
 
   get twitter_link() {
-    return "https://twitter.com/i/user/" + this.user!.twitterId;
+    return "https://twitter.com/i/user/" + this.$accessor.profile.user!.twitterId;
   }
 
   get sharable_profile_link() {
@@ -1023,8 +532,8 @@ export default class extends Vue {
       u += '/';
 
     return "https://twitter.com/intent/tweet?text=" +
-      encodeURIComponent(this.user!.profileAskMeMessage) +
-      "&url=" + encodeURIComponent(QUESTION_IT_FULL_URL + u + this.user!.slug) +
+      encodeURIComponent(this.$accessor.profile.user!.profileAskMeMessage) +
+      "&url=" + encodeURIComponent(QUESTION_IT_FULL_URL + u + this.$accessor.profile.user!.slug) +
       "&via=QuestionItSpace";
   }
 
@@ -1041,11 +550,11 @@ export default class extends Vue {
     try {
       this.is_pull_refreshing = true;
 
-      const user_res: ISentUser = await this.$axios.$get('user/id/' + this.user!.id);
+      const user_res: ISentUser = await this.$axios.$get('user/id/' + this.$accessor.profile.user!.id);
 
       // Get answers
       const answers_res: IPaginatedWithIdsResult<ISentQuestion> = await this.$axios.$get(
-      'question/answer/user/' + this.user!.id, {
+      'question/answer/user/' + this.$accessor.profile.user!.id, {
         params: {
           sinceId: this.answers?.items.length ? this.answers.items[0].id : '0',
         },
@@ -1083,134 +592,39 @@ export default class extends Vue {
     return numberFormat(number);
   }
 
-  questionHasBeenLiked(question: ISentQuestion) {
-    if (this.answers) {
-      const found = this.answers.items.findIndex(q => q.id === question.id);
-
-      if (found !== -1) {
-        this.answers.items[found].answer!.liked = question.answer!.liked;
-        this.answers.items[found].answer!.likeCount = question.answer!.likeCount;
-      }
-    }
-  }
-
   seeAnyway() {
-    this.has_accepted_to_show = true;
+    this.hasAcceptedToShow = true;
   }
 
 
   /* QUESTION DELETION */
 
   destroyQuestion(question: ISentQuestion) {
-    this.will_destroy = question.id;
+    this.deleteQuestionModal = question;
   }
 
-  cancelDestroy() {
-    this.will_destroy = false;
-  }
+  onQuestionDeleted() {
+    const deleted = this.deleteQuestionModal;
 
-  async sendDestroyQuestion() {
-    const id = this.will_destroy;
-    if (!id || this.destroy_loading) {
-      return;
-    }
-
-    this.destroy_loading = true;
-
-    try {
-      await this.$axios.delete('questions', { params: { question: id } });
-      this.answers!.items = this.answers?.items.filter(e => e.id !== id) ?? [];
-
-      // If deleted question is pinned question
-      if (this.user?.pinnedQuestion && this.user.pinnedQuestion.id === id) {
-        this.user.pinnedQuestion = undefined;
-        this.$accessor.setLoggedUser({ ...this.user });
-      }
-
-      this.$toast.success(
-        this.$t('question_has_been_deleted'),
-      );
-
-      if (this.user?.counts?.answers) {
-        this.user.counts.answers--;
-      }
+    if (deleted) {
+      this.$accessor.profile.deleteQuestion(deleted);
 
       if (this.$route.params.question) {
         // on est sur la page de question, retour sur page slug
         this.$router.push(this.localePath('/u/' + this.user!.slug));
       }
-    } catch (e) {
-      handleError(e, this);
+
+      this.$toast.success(this.$t('question_has_been_deleted'));
     }
 
-    this.will_destroy = false;
-    this.destroy_loading = false;
+    this.deleteQuestionModal = null;
   }
 
 
   /* BLOCK USER */
 
   willblockUnblock() {
-    if (this.is_self || !this.user || !this.$accessor.isLogged)
-      return;
-
-    this.will_block = true;
-  }
-
-  cancelBlock() {
-    this.will_block = false;
-  }
-
-  async blockUnblock() {
-    if (
-      this.is_self ||
-      !this.user ||
-      !this.relationship ||
-      !this.$accessor.isLogged ||
-      this.will_block === 1
-    )
-      return;
-
-    const action = this.relationship.hasBlocked ? 'unblock' : 'block';
-    this.will_block = 1;
-
-    if (action === 'block') {
-      this.has_accepted_to_show = false;
-
-      try {
-        await this.$axios.post('blocks/' + this.user.id);
-        this.$toast.success(this.$t('user_has_been_block'));
-        this.relationship.hasBlocked = true;
-
-        // Refresh relationship
-        if (this.relationship) {
-          // On le suit
-          if (this.relationship.following) {
-            this.user.counts!.followers!--;
-          }
-          // Il nous suit
-          if (this.relationship.followedBy) {
-            this.user.counts!.followings!--;
-          }
-
-          this.relationship.following = false;
-          this.relationship.followedBy = false;
-        }
-      } catch (e) {
-        handleError(e, this);
-      }
-    }
-    else {
-      try {
-        await this.$axios.delete('blocks/' + this.user.id);
-        this.$toast.success(this.$t('user_has_been_unblock'));
-        this.relationship.hasBlocked = false;
-      } catch (e) {
-        handleError(e, this);
-      }
-    }
-
-    this.will_block = false;
+    this.blockUserModal = true;
   }
 
 
@@ -1301,46 +715,19 @@ export default class extends Vue {
   /* PIN QUESTION */
 
   willPin(item: ISentQuestion) {
-    this.will_pin = { type: 'pin', question: item.id };
+    this.pinQuestionModal = { type: 'pin', question: item.id };
   }
 
   willUnpin() {
     if (!this.user || !this.user.pinnedQuestion)
       return;
 
-    this.will_pin = { type: 'unpin', question: this.user.pinnedQuestion.id };
+    this.pinQuestionModal = { type: 'unpin', question: this.user.pinnedQuestion.id };
   }
 
-  cancelPin() {
-    this.will_pin = false;
-  }
-
-  async pin() {
-    if (!this.will_pin || !this.user || !this.is_self || this.pin_loading)
-      return;
-
-    const action = this.will_pin;
-    this.pin_loading = true;
-
-    try {
-      let user: ISentUser;
-      if (action.type === 'pin') {
-        user = (await this.$axios.patch('questions/pin', { id: action.question })).data as ISentUser;
-        this.$toast.success(this.$t('pin_success'));
-      }
-      else {
-        user = (await this.$axios.delete('questions/pin')).data as ISentUser;
-        this.$toast.success(this.$t('unpin_success'));
-      }
-
-      this.$accessor.setLoggedUser({ ...user });
-      this.user = user;
-      this.will_pin = false;
-    } catch (e) {
-      handleError(e, this);
-    }
-
-    this.pin_loading = false;
+  onPinnedQuestion(user: ISentUser) {
+    this.pinQuestionModal = null;
+    this.user = user;
   }
 
 
@@ -1588,42 +975,37 @@ export default class extends Vue {
     if (this.edit_load)
       return;
 
-    this.will_refresh_profile = true;
+    this.showRefreshProfile = true;
   }
 
   cancelRefreshProfile() {
-    this.will_refresh_profile = false;
+    this.showRefreshProfile = false;
   }
 
   async refreshPpWithTwitter() {
-    if (!this.user || this.edit_load)
+    if (!this.$accessor.profile.user || this.refreshProfileLoad)
       return;
 
-    this.edit_load = true;
+    this.refreshProfileLoad = true;
 
     try {
       const modified = (await this.$axios.patch('users/sync_twitter')).data as ISentUser;
 
       this.cleanUpObjectUrls();
 
-      this.user.profilePictureUrl = modified.profilePictureUrl;
-      this.user.bannerPictureUrl = modified.bannerPictureUrl;
+      this.$accessor.profile.onProfilePictureRefresh(modified);
+
       this.new_pp = null;
       this.new_banner = null;
-
-      if (this.before_edit) {
-        this.before_edit.profilePictureUrl = modified.profilePictureUrl;
-        this.before_edit.bannerPictureUrl = modified.bannerPictureUrl;
-      }
     } catch (e) {
       handleError(e, this);
     }
 
-    this.edit_load = false;
-    this.will_refresh_profile = false;
+    this.refreshProfileLoad = false;
+    this.showRefreshProfile = false;
   }
 
-  cleanUpObjectUrls(user = this.user) {
+  cleanUpObjectUrls(user = this.$accessor.profile.user) {
     // Revoke urls
     if (user!.profilePictureUrl?.startsWith('blob:')) {
       URL.revokeObjectURL(user!.profilePictureUrl);
@@ -1640,7 +1022,7 @@ export default class extends Vue {
     if (!u.endsWith('/'))
       u += '/';
 
-    navigator.clipboard.writeText(u + this.user!.slug)
+    navigator.clipboard.writeText(u + this.$accessor.profile.user!.slug)
       .then(() => {
         this.$toast.success(this.$t('link_copied_clipboard'));
       })
@@ -1669,11 +1051,11 @@ export default class extends Vue {
     window.scrollTo(0, 0);
 
     // If slug is only id
-    if (this.user && this.$route.params.slug === this.user.id.toString()) {
+    if (this.$accessor.profile.user && this.$route.params.slug === this.$accessor.profile.user.id.toString()) {
       if (this.$route.params.question)
-        this.$router.replace(this.localePath('/u/' + this.user.slug + '/' + this.$route.params.question))
+        this.$router.replace(this.localePath('/u/' + this.$accessor.profile.user.slug + '/' + this.$route.params.question))
       else
-        this.$router.replace(this.localePath('/u/' + this.user.slug));
+        this.$router.replace(this.localePath('/u/' + this.$accessor.profile.user.slug));
     }
   }
 }
@@ -1696,8 +1078,10 @@ main.user-root {
   word-break: normal;
 }
 
-.modal-card-title {
-  flex-shrink: unset;
+.user-root ::v-deep {
+  .modal-card-title {
+    flex-shrink: unset;
+  }
 }
 
 .flex-end {
