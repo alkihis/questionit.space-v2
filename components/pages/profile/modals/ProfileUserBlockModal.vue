@@ -84,5 +84,7 @@ export default class extends Vue {
 </script>
 
 <style lang="scss" scoped>
-
+.modal-card-title {
+  flex-shrink: unset;
+}
 </style>

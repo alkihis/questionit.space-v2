@@ -1,12 +1,19 @@
 import { getterTree, mutationTree, actionTree } from 'typed-vuex';
 import type { ISentRelationship, ISentUser } from '~/utils/types/sent.entities.types';
 import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
+import { handleError } from '~/utils/helpers';
+import { SLUG_REGEX } from '~/pages/u/_slug/index.vue';
 
 interface IProfileState {
   user: ISentUser | null;
   answers: IPaginatedWithIdsResult<ISentQuestion>;
   hasAcceptedToShow: boolean;
   editUser: ISentUser | null;
+  editionLoad: boolean;
+  newPP: File | null;
+  newBanner: File | null;
+  slugEditionStatus: 'invalid' | 'available' | 'taken' | null;
+  slugLoadTimeout: number;
 }
 
 export const state: () => IProfileState = () => ({
@@ -14,6 +21,11 @@ export const state: () => IProfileState = () => ({
   answers: { items: [] },
   hasAcceptedToShow: false,
   editUser: null,
+  editionLoad: false,
+  newPP: null,
+  newBanner: null,
+  slugEditionStatus: null,
+  slugLoadTimeout: 0,
 });
 
 export const getters = getterTree(state, {
@@ -21,6 +33,7 @@ export const getters = getterTree(state, {
   canShowProfile: state => !state.user!.relationship!.hasBlocked || state.hasAcceptedToShow,
   canShowQuestions: state => (!state.user!.relationship!.hasBlocked || state.hasAcceptedToShow) && !state.user!.relationship!.isBlockedBy,
   isSelf: (state, _, rootState) => rootState.loggedUser && rootState.loggedUser.id === state.user?.id,
+  twitterLink: state => 'https://twitter.com/i/user/' + state.user!.twitterId,
 });
 
 export const mutations = mutationTree(state, {
@@ -29,6 +42,11 @@ export const mutations = mutationTree(state, {
     state.answers = { items: [] };
     state.hasAcceptedToShow = false;
     state.editUser = null;
+    state.editionLoad = false;
+    state.newPP = null;
+    state.newBanner = null;
+    state.slugEditionStatus = null;
+    state.slugLoadTimeout = 0;
   },
   setUser(state, user: ISentUser | null) {
     state.user = user;
@@ -80,9 +98,27 @@ export const mutations = mutationTree(state, {
   },
   startEdition(state) {
     state.editUser = { ...state.user! };
+    state.editionLoad = false;
   },
   cancelEdition(state) {
+    if (state.editUser) {
+      // Revoke urls
+      if (state.editUser.profilePictureUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(state.editUser.profilePictureUrl);
+      }
+      if (state.editUser.bannerPictureUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(state.editUser.bannerPictureUrl);
+      }
+    }
+
     state.editUser = null;
+    state.editionLoad = false;
+    state.newBanner = null;
+    state.newPP = null;
+
+    clearTimeout(state.slugLoadTimeout);
+    state.slugLoadTimeout = 0;
+    state.slugEditionStatus = null;
   },
   likeQuestion(state, question: ISentQuestion) {
     const found = state.answers.items.findIndex(q => q.id === question.id);
@@ -117,15 +153,97 @@ export const mutations = mutationTree(state, {
     state.user!.bannerPictureUrl = modified.bannerPictureUrl;
 
     if (state.editUser) {
+      // Revoke urls
+      if (state.editUser.profilePictureUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(state.editUser.profilePictureUrl);
+      }
+      if (state.editUser.bannerPictureUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(state.editUser.bannerPictureUrl);
+      }
+
       state.editUser.profilePictureUrl = modified.profilePictureUrl;
       state.editUser.bannerPictureUrl = modified.bannerPictureUrl;
+      state.newPP = null;
+      state.newBanner = null;
     }
+  },
+  onPPInputChange(state, file: File | null) {
+    state.newPP = file;
+  },
+  onBannerInputChange(state, file: File | null) {
+    state.newBanner = file;
+  },
+  onPPCropEnd(state, file: File) {
+    if (state.editUser) {
+      state.editUser.profilePictureUrl = URL.createObjectURL(file);
+    }
+  },
+  onBannerCropEnd(state, file: File) {
+    if (state.editUser) {
+      state.editUser.bannerPictureUrl = URL.createObjectURL(file);
+    }
+  },
+  onEditLoadStateChange(state, isLoading: boolean) {
+    state.editionLoad = isLoading;
+  },
+  setSlugEditionStatus(state, status: 'invalid' | 'available' | 'taken' | null) {
+    state.slugEditionStatus = status;
+  },
+  setSlugLoadTimeout(state, timeout: number) {
+    state.slugLoadTimeout = timeout;
+  },
+  changeEditUserProperty(state, partialUser: Partial<ISentUser>) {
+    if (!state.editUser) {
+      return;
+    }
+
+    state.editUser = { ...state.editUser, ...partialUser };
+  },
+  incrementFollowingsCount(state) {
+    state.user!.counts!.followings++;
+  },
+  decrementFollowingsCount(state) {
+    state.user!.counts!.followings--;
+  },
+  incrementFollowersCount(state) {
+    state.user!.counts!.followers++;
+  },
+  decrementFollowersCount(state) {
+    state.user!.counts!.followers--;
   },
 });
 
 export const actions = actionTree(
   { state, getters, mutations },
   {
+    setEditionSlug({ state, commit }, slug: string) {
+      commit('changeEditUserProperty', { slug });
 
-  }
+      clearTimeout(state.slugLoadTimeout);
+      commit('setSlugLoadTimeout', 0);
+
+      if (!slug.match(SLUG_REGEX)) {
+        commit('setSlugEditionStatus', 'invalid');
+        return;
+      }
+      if (slug.toLocaleLowerCase() === state.user!.slug.toLocaleLowerCase()) {
+        commit('setSlugEditionStatus', null);
+        return;
+      }
+
+      const timeout = setTimeout(async () => {
+        commit('setSlugLoadTimeout', 0);
+
+        try {
+          const available = (await this.$axios.get('user/check-available-slug', { params: { slug } })).data as { available: boolean };
+
+          commit('setSlugEditionStatus', available.available ? 'available' : 'taken');
+        } catch (e) {
+          handleError(e, this);
+        }
+      }, 350);
+
+      commit('setSlugLoadTimeout', timeout as any as number);
+    },
+  },
 );

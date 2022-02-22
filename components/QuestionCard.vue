@@ -201,9 +201,9 @@ import { Component, Prop } from 'nuxt-property-decorator';
 import QuestionBase from './QuestionBase/QuestionBase';
 import Dropdown from './Dropdown/Dropdown';
 import QuestionText from './QuestionText/QuestionText';
-import AccountChooser from './AccountChooser/AccountChooser';
+import AccountChooser from './AccountChooser.vue';
 import ModalImage from './ModalImage/ModalImage';
-import AskQuestion from './AskQuestion/AskQuestion';
+import AskQuestion from './AskQuestion.vue';
 import PollChoice from './PollChoice/PollChoice';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
 

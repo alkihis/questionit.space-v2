@@ -2,7 +2,7 @@ import { Component, Prop } from 'nuxt-property-decorator';
 import { handleError } from '~/utils/helpers';
 import QuestionBase from '../QuestionBase/QuestionBase';
 import QuestionText from '../QuestionText/QuestionText';
-import QuestionTextArea from '../QuestionTextArea/QuestionTextArea';
+import QuestionTextArea from '../QuestionTextArea.vue';
 import PollChoice from '../PollChoice/PollChoice';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
 

@@ -21,7 +21,7 @@ export const EmojiLib: IEmojiLib = RawEmojiLib;
 export const AVAILABLE_EMOJIS = Object.keys(EmojiLib.lib);
 export const head: any = "head";
 export const QUESTION_IT_VERSION = '2.0.0';
-export const QUESTION_IT_FULL_URL = 'https://questionit.space';
+export const QUESTION_IT_FULL_URL = process.env.WEB_PUBLIC_URL || 'https://questionit.space';
 export const QUESTION_IT_REAL_URL = process.env.NODE_ENV === 'production' ? QUESTION_IT_FULL_URL : 'http://localhost:5002';
 export const FULL_BLACK_LOGO = QUESTION_IT_FULL_URL + '/images/logo/LogoBlack.png';
 export const FULL_WHITE_LOGO = QUESTION_IT_FULL_URL + '/images/logo/LogoWhite.png';
@@ -337,7 +337,7 @@ export function fullDateText(date: Date, vue_instance: any, force_year = false, 
 
   const is_fr = vue_instance.$i18n.locale === 'fr';
   const options: Intl.DateTimeFormatOptions = {
-    year: is_sup_year || force_year ? "numeric" : undefined,
+    year: is_sup_year || force_year ? "numeric" : undefined,
     month: "numeric",
     day: "numeric",
   };
@@ -371,9 +371,9 @@ export function translateApiError(cmp: Vue, error: IApiError) : string | { toStr
   const code = EApiError[error.code];
 
   if (code !== undefined) {
-    return cmp.$t('errors.' + code).toString() + '.';
+    return cmp.$i18n.t('errors.' + code).toString() + '.';
   }
-  return cmp.$t('unknown_error');
+  return cmp.$i18n.t('unknown_error');
 }
 
 export async function isWebAuthAvailable() {
