@@ -232,7 +232,7 @@ export default class extends Vue {
   }
 
   get relationship() {
-    return this.user.relationship!;
+    return this.$accessor.profile.relationship!;
   }
 
   get invalidSlug() {

@@ -7,7 +7,7 @@
         :allowReplies="!$accessor.profile.relationship.hasBlocked"
         :allowPin="$accessor.profile.isSelf"
         @destroy="destroyQuestion"
-        @like="questionHasBeenLiked"
+        @like="$accessor.profile.refreshLikeDetails({ id: $event.id, liked: $event.answer.liked, likeCount: $event.answer.likeCount })"
         @pin="willPin"
       ></nuxt-child>
 
@@ -89,18 +89,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
-import { makeTitle, handleError, numberFormat, fullDateText, QUESTION_IT_FULL_URL, FULL_BLACK_LOGO, isAxiosError, convertAxiosError } from '~/utils/helpers';
-import QuestionCard from '~/components/QuestionCard.vue';
-import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply';
+import { makeTitle, handleError, QUESTION_IT_FULL_URL, FULL_BLACK_LOGO, isAxiosError, convertAxiosError } from '~/utils/helpers';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
-import { StateChanger } from 'vue-infinite-loading';
-import UserCard from '~/components/UserCard.vue';
-import CropModal from '~/components/CropModal/CropModal';
-import AccountChooser from '~/components/AccountChooser.vue';
-import QuestionTextArea from '~/components/QuestionTextArea.vue';
 // @ts-ignore
 import PullLoader from '~/components/PullLoader.vue';
-import AskQuestion from '~/components/AskQuestion.vue';
 import { IPaginatedWithIdsResult, ISentQuestion, ISentUser } from "~/utils/types/sent.entities.types";
 import ProfilePinQuestionModal, { TQuestionPin } from "~/components/pages/profile/modals/ProfilePinQuestionModal.vue";
 import ProfileQuestionDeleteModal from "~/components/pages/profile/modals/ProfileQuestionDeleteModal.vue";
@@ -117,15 +109,8 @@ export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
     ProfileUserBlockModal,
     ProfileQuestionDeleteModal,
     ProfilePinQuestionModal,
-    QuestionCard,
-    QuestionCardNoReply,
     BulmaModal,
-    UserCard,
-    CropModal,
-    AccountChooser,
-    QuestionTextArea,
     PullLoader,
-    AskQuestion,
   },
   scrollToTop: false,
   async asyncData({ app, params, redirect }) {
@@ -229,7 +214,7 @@ export default class extends Vue {
   }
 
   get relationship() {
-    return this.$accessor.profile.relationship
+    return this.$accessor.profile.relationship;
   }
 
   /* METHODS */
@@ -251,7 +236,7 @@ export default class extends Vue {
       const answersResponse: IPaginatedWithIdsResult<ISentQuestion> = await this.$axios.$get(
       'question/answer/user/' + this.$accessor.profile.user!.id, {
         params: {
-          sinceId: answers.length ? answers[0].id : '0',
+          sinceId: answers.length ? answers[0].answer!.id : '0',
         },
       });
 
@@ -314,7 +299,7 @@ export default class extends Vue {
 
     try {
       await this.$axios.post('relationships/' + this.user.id);
-      this.relationship.following = true;
+      this.$accessor.profile.updateRelationship({ following: true });
       this.$toast.success(this.$t('followed_user', { name: this.user.name }));
 
       if (before !== this.relationship.following) {
@@ -338,7 +323,7 @@ export default class extends Vue {
 
     try {
       await this.$axios.delete('relationships/' + this.user.id);
-      this.relationship.following = false;
+      this.$accessor.profile.updateRelationship({ following: false });
       this.$toast.success(this.$t('unfollowed_user', { name: this.user.name }));
 
       if (before !== this.relationship.following && this.user.counts?.followers) {

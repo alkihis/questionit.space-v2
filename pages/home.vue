@@ -27,6 +27,7 @@
             :key="item.id"
             :question="item"
             :inTimeline="true"
+            @like="questionLiked"
             @want-conversation="wantConversation(item, $event)"
           />
         </div>
@@ -48,9 +49,9 @@
     <!-- When a question is clicked -->
     <timeline-conversation
       v-if="selected_question"
-      :question_id="selected_question"
-      :initialImmediateReply="reply_conversation"
-      @like="questionLiked($event)"
+      :question-id="selected_question"
+      :initial-immediate-reply="reply_conversation"
+      @like="questionLiked"
       @close="closeConversation()"
     />
   </main>
@@ -102,7 +103,7 @@ export default class extends Vue {
       const questions = await this.$axios.$get('question/answer/timeline', {
         params: {
           pageSize: FETCH_SIZE,
-          untilId: this.timeline.items[this.timeline.items.length - 1]?.id,
+          untilId: this.timeline.items[this.timeline.items.length - 1]?.answer?.id,
         },
       }) as IPaginatedWithIdsResult<ISentQuestion>;
 
@@ -156,7 +157,7 @@ export default class extends Vue {
         {
           params: {
             pageSize: FETCH_SIZE,
-            sinceId: this.getMostRecentQuestionId(),
+            sinceId: this.getMostRecentAnswerId(),
           }
         }
       );
@@ -187,18 +188,18 @@ export default class extends Vue {
     const questions = this.waiting_questions;
     this.waiting_questions = [];
     this.timeline = {
-      nextSinceId: questions[0]?.id ?? this.timeline.nextSinceId,
+      nextSinceId: questions[0]?.answer?.id ?? this.timeline.nextSinceId,
       nextUntilId: this.timeline.nextUntilId,
       items: [...questions, ...this.timeline.items],
     };
   }
 
-  protected getMostRecentQuestionId() {
+  protected getMostRecentAnswerId() {
     if (this.waiting_questions.length)
-      return this.waiting_questions[0].id;
+      return this.waiting_questions[0].answer!.id;
 
     if (this.timeline.items.length)
-      return this.timeline.items[0].id;
+      return this.timeline.items[0].answer!.id;
 
     return 0;
   }

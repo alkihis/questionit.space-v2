@@ -94,6 +94,7 @@
           :question="user.pinnedQuestion"
           :allowPin="$accessor.profile.isSelf"
           :pinned="true"
+          @like="$accessor.profile.refreshLikeDetails({ id: $event.id, liked: $event.answer.liked, likeCount: $event.answer.likeCount })"
           @pin="$emit('unpin', $event)"
           @destroy="$emit('destroy', user.pinnedQuestion)"
         />
@@ -112,6 +113,7 @@
           :key="item.id"
           :question="item"
           :allowPin="$accessor.profile.isSelf"
+          @like="$accessor.profile.refreshLikeDetails({ id: $event.id, liked: $event.answer.liked, likeCount: $event.answer.likeCount })"
           @pin="$emit('pin', $event)"
           @destroy="$emit('destroy', item)"
         />
@@ -201,7 +203,7 @@ export default class extends Vue {
   }
 
   get relationship() {
-    return this.user.relationship!;
+    return this.$accessor.profile.relationship!;
   }
 
   get canSendQuestion() {
@@ -254,7 +256,7 @@ export default class extends Vue {
     }
 
     try {
-      const lastId = this.$accessor.profile.answers.items[this.$accessor.profile.answers.items.length - 1]?.id;
+      const lastId = this.$accessor.profile.answers.items[this.$accessor.profile.answers.items.length - 1]?.answer?.id;
       // Get answers
       const newAnswers = await this.$axios.$get('question/answer/user/' + this.user!.id, { params: { untilId: lastId } }) as IPaginatedWithIdsResult<ISentQuestion>;
 

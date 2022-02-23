@@ -126,6 +126,7 @@ export default {
     browserBaseURL: process.env.NODE_ENV === 'production' ? 'https://api.questionit.space/' : 'http://localhost:5001/',
     baseURL: 'http://api:5000/',
     retry: { retries: 3 },
+    progress: false,
   },
   /*
    ** Build configuration

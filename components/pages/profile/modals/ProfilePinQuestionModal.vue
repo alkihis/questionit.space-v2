@@ -1,5 +1,5 @@
 <template>
-  <bulma-modal v-if="pinned" open card @close="pinned = null">
+  <bulma-modal v-if="!!pinned" open card @close="pinned = null">
     <header class="modal-card-head">
       <p v-if="pinned.type === 'pin'" class="modal-card-title">{{ $t('pin_question') }}</p>
       <p v-else class="modal-card-title">{{ $t('unpin_question') }}</p>
@@ -52,11 +52,11 @@ export default class extends Vue {
     try {
       let user: ISentUser;
       if (action.type === 'pin') {
-        user = (await this.$axios.patch('questions/pin', { id: action.question })).data as ISentUser;
+        user = (await this.$axios.patch(`question/pin/${action.question}`)).data as ISentUser;
         this.$toast.success(this.$t('pin_success'));
       }
       else {
-        user = (await this.$axios.delete('questions/pin')).data as ISentUser;
+        user = (await this.$axios.delete('question/pin')).data as ISentUser;
         this.$toast.success(this.$t('unpin_success'));
       }
 

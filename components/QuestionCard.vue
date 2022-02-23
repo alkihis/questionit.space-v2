@@ -243,19 +243,17 @@ export default class extends QuestionBase {
   big_image_showed = false;
 
   async like() {
-    if (!this.$accessor.isLogged)
+    if (!this.$accessor.isLogged || !this.question.answer)
       return;
 
     let question: ISentQuestion;
-    if (!this.question.answer!.liked) {
-      question = (await this.$axios.post('likes/' + this.question.answer!.id)).data as ISentQuestion;
+    if (!this.question.answer.liked) {
+      question = (await this.$axios.post('like/' + this.question.answer.id)).data as ISentQuestion;
     }
     else {
-      question = (await this.$axios.delete('likes/' + this.question.answer!.id)).data as ISentQuestion;
+      question = (await this.$axios.delete('like/' + this.question.answer.id)).data as ISentQuestion;
     }
 
-    this.question.answer!.liked = question.answer!.liked;
-    this.question.answer!.likeCount = question.answer!.likeCount;
     this.$emit('like', question);
   }
 

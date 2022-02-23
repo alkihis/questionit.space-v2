@@ -4,16 +4,16 @@ import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator';
   components: {},
 })
 export default class extends Vue {
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   open!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   large!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   card!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   flexible!: boolean;
 
   uuid = String(Math.random());
@@ -21,7 +21,7 @@ export default class extends Vue {
   @Watch('open')
   onOpenChange(v: boolean) {
     document.documentElement.removeAttribute('data-modal-' + this.uuid);
-    
+
     if (v) {
       this.set();
     }

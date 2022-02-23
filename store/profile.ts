@@ -28,10 +28,17 @@ export const state: () => IProfileState = () => ({
   slugLoadTimeout: 0,
 });
 
+export const FAKE_RELATIONSHIP: ISentRelationship = {
+  hasBlocked: false,
+  isBlockedBy: false,
+  following: false,
+  followedBy: false,
+};
+
 export const getters = getterTree(state, {
-  relationship: state => state.user!.relationship! as ISentRelationship,
-  canShowProfile: state => !state.user!.relationship!.hasBlocked || state.hasAcceptedToShow,
-  canShowQuestions: state => (!state.user!.relationship!.hasBlocked || state.hasAcceptedToShow) && !state.user!.relationship!.isBlockedBy,
+  relationship: state => state.user!.relationship as ISentRelationship ?? FAKE_RELATIONSHIP,
+  canShowProfile: state => !state.user!.relationship?.hasBlocked || state.hasAcceptedToShow,
+  canShowQuestions: state => (!state.user!.relationship?.hasBlocked || state.hasAcceptedToShow) && !state.user!.relationship?.isBlockedBy,
   isSelf: (state, _, rootState) => rootState.loggedUser && rootState.loggedUser.id === state.user?.id,
   twitterLink: state => 'https://twitter.com/i/user/' + state.user!.twitterId,
 });
@@ -57,10 +64,15 @@ export const mutations = mutationTree(state, {
   addAnswers(state, { answers, addToTop }: { answers: ISentQuestion[], addToTop: boolean }) {
     if (addToTop) {
       state.answers.items = [...answers, ...state.answers.items];
-      state.answers.nextSinceId = answers[0]?.id ?? state.answers.nextSinceId;
+      state.answers.nextSinceId = answers[0]?.answer?.id ?? state.answers.nextSinceId;
     } else {
       state.answers.items = [...state.answers.items, ...answers];
-      state.answers.nextUntilId = answers[answers.length - 1]?.id ?? state.answers.nextUntilId;
+      state.answers.nextUntilId = answers[answers.length - 1]?.answer?.id ?? state.answers.nextUntilId;
+    }
+  },
+  updateRelationship(state, relationship: Partial<ISentRelationship>) {
+    if (state.user?.relationship) {
+      state.user.relationship = { ...state.user.relationship, ...relationship };
     }
   },
   updateRelationshipAfterBlock(state) {
@@ -123,17 +135,28 @@ export const mutations = mutationTree(state, {
   likeQuestion(state, question: ISentQuestion) {
     const found = state.answers.items.findIndex(q => q.id === question.id);
 
-    if (found !== -1 && !state.answers.items[found].answer!.liked) {
-      state.answers.items[found].answer!.liked = true;
-      state.answers.items[found].answer!.likeCount++;
+    if (found !== -1) {
+      const answer = state.answers.items[found].answer!;
+
+      if (!answer.liked) {
+        answer.liked = true;
+        answer.likeCount++;
+      } else {
+        answer.liked = false;
+        answer.likeCount--;
+      }
     }
   },
-  dislikeQuestion(state, question: ISentQuestion) {
-    const found = state.answers.items.findIndex(q => q.id === question.id);
+  refreshLikeDetails(state, { id, likeCount, liked }: { id: number, liked: boolean, likeCount: number }) {
+    const found = state.answers.items.filter(q => q.id === id);
 
-    if (found !== -1 && state.answers.items[found].answer!.liked) {
-      state.answers.items[found].answer!.liked = false;
-      state.answers.items[found].answer!.likeCount--;
+    if (state.user?.pinnedQuestion?.id === id) {
+      found.push(state.user.pinnedQuestion);
+    }
+
+    for (const foundQuestion of found) {
+      foundQuestion.answer!.liked = liked;
+      foundQuestion.answer!.likeCount = likeCount;
     }
   },
   deleteQuestion(state, question: ISentQuestion) {

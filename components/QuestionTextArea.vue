@@ -83,7 +83,7 @@
     </div>
     <portal v-if="picker_open" to="emoji-picker-main">
       <div class="picker-root">
-        <VEmojiPicker
+        <v-emoji-picker
           @select="closePicker"
           class="thepicker"
           :style="getPickerStyles()"
@@ -221,7 +221,7 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator';
 import { searchEmoji, EmojiLib } from '~/utils/helpers';
-import VEmojiPicker from 'v-emoji-picker';
+import { VEmojiPicker } from 'v-emoji-picker';
 import { IEmoji } from 'v-emoji-picker/lib/models/Emoji';
 
 export type PollInputEvent = ({
@@ -235,18 +235,17 @@ export type PollInputData = {
   valid: boolean,
 };
 
-// @ts-ignore
 @Component({
   components: {
-    VEmojiPicker: VEmojiPicker as any,
-  }
+    VEmojiPicker,
+  },
 })
 export default class extends Vue {
   @Prop({ required: true })
   value!: string;
 
   @Prop({ default: 'info' })
-  type!: 'info' | 'normal';
+  type!: 'info' | 'normal';
 
   @Prop({ default: '' })
   placeholder!: string;
@@ -262,7 +261,7 @@ export default class extends Vue {
 
   emoji_open = false;
   picker_open = false;
-  enable_poll: boolean | null = false;
+  enable_poll: boolean | null = false;
   show_poll_options = false;
 
   options: string[] = ['', ''];
@@ -470,7 +469,7 @@ export default class extends Vue {
       return;
     }
 
-    if (e.key === 'Enter' || e.key === 'Tab') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       // validate selection
       const selected = this.emoji_selector.querySelector('li.selected') as HTMLLIElement;
 

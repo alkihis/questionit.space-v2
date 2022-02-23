@@ -5,15 +5,15 @@
       :question="question"
       :ancestors="ancestors"
       :replies="replies"
-      :has_more="has_more"
-      :has_more_replies="has_more_replies"
-      :allowReplies="allowReplies"
-      :allowPin="allowPin"
+      :has-more="hasMore"
+      :has-more-replies="hasMoreReplies"
+      :allow-replies="allowReplies"
+      :allow-pin="allowPin"
       :pinned="pinned"
       @close="close()"
       @question-change="changeView($event)"
       @destroy="$emit('destroy', $event)"
-      @like="$emit('like', $event)"
+      @like="onQuestionLike"
       @pin="$emit('pin', $event)"
     />
       <!-- Todo Better error handling. -->
@@ -32,7 +32,7 @@ import QuestionCard from '~/components/QuestionCard.vue';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import QuestionConversation from '~/components/QuestionConversation/QuestionConversation.vue';
 import { isAxiosError, convertAxiosError, makeTitle, fullDateText, randomAnonymousImage, QUESTION_IT_FULL_URL } from '~/utils/helpers';
-import { ISentQuestion } from "~/utils/types/sent.entities.types";
+import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 
 const LOAD_SIZE = 10;
 
@@ -60,16 +60,16 @@ const LOAD_SIZE = 10;
 
       const slug = route.params.slug;
 
-      const question_ancestors = app.$axios.get('questions/tree/' + questionid, { params: { size: LOAD_SIZE } });
-      const reply_res = app.$axios.get('questions/replies/' + questionid, { params: { size: LOAD_SIZE } });
+      const questionTreeRequest = app.$axios.get('question/ancestors/' + questionid, { params: { pageSize: LOAD_SIZE } });
+      const repliesRequest = app.$axios.get('question/replies/' + questionid, { params: { pageSize: LOAD_SIZE } });
 
       // Await requests
-      await Promise.all([question_ancestors, reply_res]);
+      await Promise.all([questionTreeRequest, repliesRequest]);
 
       const {
         question,
         ancestors
-      } = (await question_ancestors).data as { question: ISentQuestion, ancestors: ISentQuestion[] };
+      } = (await questionTreeRequest).data as { question: ISentQuestion, ancestors: ISentQuestion[] };
 
       if (slug.match(/^[0-9]+$/)) {
         if (String(question.receiver.id) !== slug) {
@@ -81,14 +81,14 @@ const LOAD_SIZE = 10;
         return redirect(app.localePath('/u/' + question.receiver.slug + '/' + question.id));
       }
 
-      const replies = (await reply_res).data as ISentQuestion[];
+      const replies = (await repliesRequest).data as IPaginatedWithIdsResult<ISentQuestion>;
 
       return {
         question,
         ancestors,
         replies,
-        has_more: ancestors.length >= LOAD_SIZE,
-        has_more_replies: replies.length >= LOAD_SIZE,
+        hasMore: ancestors.length >= LOAD_SIZE,
+        hasMoreReplies: replies.items.length >= LOAD_SIZE,
       };
     } catch (error) {
       if (isAxiosError(error)) {
@@ -104,8 +104,8 @@ export default class extends Vue {
   replies!: ISentQuestion[];
   error?: any;
 
-  has_more!: boolean;
-  has_more_replies!: boolean;
+  hasMore!: boolean;
+  hasMoreReplies!: boolean;
 
   @Prop({ default: true })
   allowReplies?: boolean;
@@ -169,6 +169,13 @@ export default class extends Vue {
 
   changeView(item: ISentQuestion) {
     this.$router.push(this.localePath('/u/' + item.receiver.slug + '/' + item.id));
+  }
+
+  onQuestionLike(question: ISentQuestion) {
+    this.question!.answer!.liked = question.answer!.liked;
+    this.question!.answer!.likeCount = question.answer!.likeCount;
+
+    this.$emit('like', question);
   }
 
   formatError() {

@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main v-if="!error">
     <section class="hero is-light">
       <div class="hero-body">
         <div class="container">
@@ -9,7 +9,7 @@
           <h2 class="subtitle">
             {{ $t('find_here_questions_by_other_users') }}.
 
-            <span v-if="has_muted_questions" class="has-muted-questions nanum">
+            <span v-if="hasMutedQuestions" class="has-muted-questions nanum">
               <br>
               <span>
                 {{ $t('you_have_awaiting_muted_questions') }}
@@ -22,7 +22,7 @@
     </section>
 
     <fluid-container>
-      <article v-if="ask_activate_notifications" class="message is-link ask-notifications">
+      <article v-if="askActivateNotifications" class="message is-link ask-notifications">
         <div class="message-body">
           <span>{{ $t('receive_notifications_message') }}.</span>
           <a href="#!" @click.prevent="enablePushNotification()">
@@ -30,7 +30,7 @@
           </a>
         </div>
       </article>
-      <article v-else-if="receive_notifications" class="message is-link ask-notifications">
+      <article v-else-if="receiveNotifications" class="message is-link ask-notifications">
         <div class="message-body">
           <span>{{ $t('accepted_notifications_message') }}.</span>
           <a href="#!" @click.prevent="disablePushNotification()">
@@ -39,10 +39,10 @@
         </div>
       </article>
 
-      <div v-if="of_the_day">
-        <div v-if="!has_already_replied_to_day_question" class="box" style="margin-top: 2rem;">
+      <div v-if="ofTheDay">
+        <div v-if="!hasAlreadyRepliedToDayQuestion" class="box" style="margin-top: 2rem;">
           <question-card-no-reply
-            :question="of_the_day"
+            :question="ofTheDay"
             :ofDay="true"
             @submitted="handleDaySubmitted"
             @deleted="handleDayDelete"
@@ -57,7 +57,7 @@
             <span>
               {{ $t('you_can_consult_it') }}
             </span>
-            <nuxt-link :to="of_the_day_link">{{ $t('here') }}</nuxt-link>.
+            <nuxt-link :to="ofTheDayLink">{{ $t('here') }}</nuxt-link>.
           </p>
         </div>
 
@@ -66,9 +66,9 @@
         </div>
       </div>
 
-      <div v-if="questions && questions.length" class="box" style="margin-top: 2rem">
+      <div v-if="questions && questions.items.length" class="box" style="margin-top: 2rem">
         <question-card-no-reply
-          v-for="item in (questions || [])"
+          v-for="item in questions.items"
           :key="item.id"
           :question="item"
           @submitted="handleSubmitted"
@@ -87,7 +87,7 @@
     </fluid-container>
 
     <!-- Modal for question delete -->
-    <bulma-modal :open="!!will_delete" :card="true" @close="cancelDelete()">
+    <bulma-modal :open="!!deleteQuestionId" :card="true" @close="cancelDelete()">
       <header class="modal-card-head">
         <p class="modal-card-title">{{ $t('delete_this_question') }}</p>
         <button class="delete" aria-label="close" @click="cancelDelete()"></button>
@@ -100,23 +100,24 @@
       </section>
       <footer class="modal-card-foot is-flex-right">
         <button
-          :disabled="delete_loading"
-          :class="{ 'button': true, 'is-danger': true, 'is-loading': delete_loading }"
+          :disabled="deleteLoading"
+          :class="{ 'button': true, 'is-danger': true, 'is-loading': deleteLoading }"
           @click="deleteQuestion()"
         >{{ $t('delete') }}</button>
         <button class="button" @click="cancelDelete()">{{ $t('cancel') }}</button>
       </footer>
     </bulma-modal>
   </main>
+  <full-error v-else :error="error" />
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
-import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply';
+import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply.vue';
 import { makeTitle, handleError, isAxiosError, convertAxiosError, cancelPushSubscription } from '~/utils/helpers';
 import { StateChanger } from 'vue-infinite-loading';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
-import { ISentQuestion } from "~/utils/types/sent.entities.types";
+import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 
 interface AlreadyReplied {
   type: 'already_replied'
@@ -127,37 +128,39 @@ interface AlreadyReplied {
   middleware: 'logged',
   components: {
     QuestionCardNoReply,
-    BulmaModal: BulmaModal,
+    BulmaModal,
   },
-  async asyncData({ app, store }) {
+  async asyncData({ app }) {
     try {
-      const question_res = app.$axios.get('questions/waiting');
-      let of_the_day_res: Promise<any> | undefined = undefined;
+      const questionRes = app.$axios.get('question/waiting');
+      let ofTheDayRes: Promise<any> | undefined = undefined;
 
       const lang = app.i18n.locale;
       if (app.$accessor.loggedUser!.allowQuestionOfTheDay && (lang === 'fr' || lang === 'en')) {
+        ofTheDayRes = app.$axios.get('question/day/of/' + lang, { params: { date: new Date().toISOString() } });
+      }
+
+      const totalWaitingCountRes = app.$axios.$get('question/waiting/count') as Promise<{ count: number, muted: number }>;
+
+      // Agrégation des requêtes
+      await Promise.allSettled([questionRes, ofTheDayRes || Promise.resolve(), totalWaitingCountRes]);
+
+      const questions = (await questionRes).data as IPaginatedWithIdsResult<ISentQuestion>;
+
+      const count = await totalWaitingCountRes;
+
+      let ofTheDay: ISentQuestion | AlreadyReplied | null = null;
+      if (ofTheDayRes) {
         try {
-          of_the_day_res = app.$axios.get('questions/of_day/' + lang, { params: { date: new Date().toISOString() } });
-        } catch (e) {
-          // tant pis: pas dispo pour la langue en cours, ou question du jour invalide
+          ofTheDay = (await ofTheDayRes).data;
+        } catch (e: any) {
+          if (e?.response?.data.questionId) {
+            ofTheDay = { type: 'already_replied', id: e.response.data.questionId };
+          }
         }
       }
 
-      const count_res = app.$axios.$get('questions/waiting/count') as Promise<{ count: number, muted: number }>;
-
-      // Agrégation des requêtes
-      await Promise.all([question_res, of_the_day_res || Promise.resolve(), count_res]);
-
-      const questions = (await question_res).data as ISentQuestion[];
-
-      const count = await count_res;
-
-      let of_the_day: ISentQuestion | AlreadyReplied | null = null;
-      if (of_the_day_res) {
-        of_the_day = (await of_the_day_res).data;
-      }
-
-      return { questions, of_the_day, has_muted_questions: count.muted > 0 };
+      return { questions, ofTheDay, hasMutedQuestions: count.muted > 0 };
     } catch (error) {
       if (isAxiosError(error)) {
         error = convertAxiosError(error);
@@ -169,17 +172,17 @@ interface AlreadyReplied {
   scrollToTop: true,
 })
 export default class extends Vue {
-  questions: ISentQuestion[] | null = null;
-  error?: any;
-  of_the_day: ISentQuestion | AlreadyReplied | null = null;
-  has_muted_questions!: boolean;
+  questions: IPaginatedWithIdsResult<ISentQuestion> | null = null;
+  error: any = null;
+  ofTheDay: ISentQuestion | AlreadyReplied | null = null;
+  hasMutedQuestions!: boolean;
 
-  questions_complete = false;
-  ask_activate_notifications: false | ServiceWorkerRegistration = false;
-  receive_notifications: PushSubscription | null = null;
+  questionsComplete = false;
+  askActivateNotifications: false | ServiceWorkerRegistration = false;
+  receiveNotifications: PushSubscription | null = null;
 
-  will_delete: boolean | number = false;
-  delete_loading = false;
+  deleteQuestionId: boolean | number = false;
+  deleteLoading = false;
 
   head() {
     return {
@@ -188,23 +191,23 @@ export default class extends Vue {
   }
 
   async loadQuestions($state: StateChanger) {
-    if (!this.questions || !this.questions.length) {
-      this.questions_complete = true;
+    if (!this.questions?.items.length) {
+      this.questionsComplete = true;
       $state.complete();
       return;
     }
 
     try {
-      const last_id = this.questions[this.questions.length - 1].id;
+      const untilId = this.questions.items[this.questions.items.length - 1].id;
       // Get answers
-      const new_questions = (await this.$axios.get('questions/waiting', { params: { until: last_id } })).data as ISentQuestion[];
+      const newQuestions = (await this.$axios.get('question/waiting', { params: { untilId } })).data as IPaginatedWithIdsResult<ISentQuestion>;
 
-      if (new_questions.length) {
-        this.questions = [...this.questions, ...new_questions];
+      if (newQuestions.items.length) {
+        this.questions.items = [...this.questions.items, ...newQuestions.items];
         $state.loaded();
       }
       else {
-        this.questions_complete = true;
+        this.questionsComplete = true;
         $state.complete();
         return;
         // no answers left.
@@ -216,13 +219,13 @@ export default class extends Vue {
   }
 
   async enablePushNotification() {
-    const registration = this.ask_activate_notifications;
+    const registration = this.askActivateNotifications;
 
     if (!registration) {
       return;
     }
 
-    this.ask_activate_notifications = false;
+    this.askActivateNotifications = false;
 
     try {
       var resp = await this.$axios.get('push/key');
@@ -242,7 +245,7 @@ export default class extends Vue {
         });
 
       await this.registerSubscription(subscription.toJSON());
-      this.receive_notifications = subscription;
+      this.receiveNotifications = subscription;
 
       this.$toast.success(this.$t('notifications_push_enabled'));
     } catch (e) {
@@ -251,97 +254,95 @@ export default class extends Vue {
   }
 
   async disablePushNotification() {
-    if (!this.receive_notifications)
+    if (!this.receiveNotifications)
       return;
 
-    await this.unregisterSubscription(this.receive_notifications.toJSON());
-    await cancelPushSubscription(this.receive_notifications);
+    await this.unregisterSubscription(this.receiveNotifications.toJSON());
+    await cancelPushSubscription(this.receiveNotifications);
 
     this.$toast.success(this.$t('notifications_push_disabled'));
-    this.receive_notifications = null;
+    this.receiveNotifications = null;
 
     try {
       const registration = await navigator.serviceWorker.ready;
       if (Notification.permission !== 'denied') {
-        this.ask_activate_notifications = registration;
+        this.askActivateNotifications = registration;
       }
     } catch (e) {
       return;
     }
   }
 
-  get has_already_replied_to_day_question() {
-    return this.of_the_day && 'type' in this.of_the_day;
+  get hasAlreadyRepliedToDayQuestion() {
+    return this.ofTheDay && 'type' in this.ofTheDay;
   }
 
-  get of_the_day_link() {
-    if (this.of_the_day && 'type' in this.of_the_day) {
-      return this.localePath('/u/' + this.$accessor.loggedUser!.slug + '/' + this.of_the_day.id);
+  get ofTheDayLink() {
+    if (this.ofTheDay && 'type' in this.ofTheDay) {
+      return this.localePath('/u/' + this.$accessor.loggedUser!.slug + '/' + this.ofTheDay.id);
     }
     return '/';
   }
 
   handleSubmitted(_: ISentQuestion, original: ISentQuestion) {
-    this.questions = this.questions?.filter(e => e.id !== original.id) ?? null;
+    this.questions!.items = this.questions!.items.filter(e => e.id !== original.id) ?? null;
     this.$accessor.decrementAnswerWait();
   }
 
   willDelete(data?: ISentQuestion) {
     if (!data) {
       // question of the day
-      this.will_delete = true;
+      this.deleteQuestionId = true;
     }
     else {
-      this.will_delete = data.id;
+      this.deleteQuestionId = data.id;
     }
   }
 
   async deleteQuestion() {
-    if (!this.will_delete || this.delete_loading) {
+    if (!this.deleteQuestionId || this.deleteLoading) {
       return;
     }
 
-    if (this.will_delete === true) {
+    if (this.deleteQuestionId === true) {
       this.handleDayDelete();
-      this.will_delete = false;
+      this.deleteQuestionId = false;
       return;
     }
 
-    this.delete_loading = true;
+    this.deleteLoading = true;
 
     try {
-      await this.$axios.delete('questions', {
-        params: { question: this.will_delete },
-      });
+      await this.$axios.delete('question/' + this.deleteQuestionId);
 
       this.$toast.show(this.$t('question_has_been_deleted'), { type: 'success' });
-      this.handleDelete(this.will_delete);
-      this.will_delete = false;
+      this.handleDelete(this.deleteQuestionId);
+      this.deleteQuestionId = false;
     } catch (e) {
       handleError(e, this);
     }
 
-    this.delete_loading = false;
+    this.deleteLoading = false;
   }
 
   cancelDelete() {
-    this.will_delete = false;
+    this.deleteQuestionId = false;
   }
 
   handleDelete(id: number) {
-    this.questions = this.questions?.filter(e => e.id !== id) ?? null;
+    this.questions!.items = this.questions!.items.filter(e => e.id !== id) ?? null;
     this.$accessor.decrementAnswerWait();
   }
 
   handleDaySubmitted(data: ISentQuestion) {
-    this.of_the_day = {
+    this.ofTheDay = {
       id: data.id,
       type: 'already_replied'
     };
   }
 
   handleDayDelete() {
-    this.of_the_day = null;
+    this.ofTheDay = null;
   }
 
   async registerSubscription(sub: PushSubscriptionJSON) {
@@ -353,8 +354,8 @@ export default class extends Vue {
   }
 
   onWorkerMessage(evt: { data: { question: ISentQuestion, type: string } }) {
-    if (evt.data.type === 'question-worker') {
-      this.questions = [evt.data.question, ...(this.questions || [])];
+    if (evt.data.type === 'question-worker' && this.questions) {
+      this.questions.items = [evt.data.question, ...(this.questions?.items || [])];
     }
   }
 
@@ -380,10 +381,10 @@ export default class extends Vue {
 
     // User doesn't activate push now, and doesn't have denied notifications
     if (subscription === null && Notification.permission !== 'denied') {
-      this.ask_activate_notifications = registration;
+      this.askActivateNotifications = registration;
     }
     else if (subscription) {
-      this.receive_notifications = subscription;
+      this.receiveNotifications = subscription;
     }
   }
 

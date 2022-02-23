@@ -71,7 +71,7 @@ import { Component, Vue, Prop } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal/BulmaModal';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import { handleError } from '~/utils/helpers';
-import { ISentQuestion } from "~/utils/types/sent.entities.types";
+import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 import QuestionCard from "~/components/QuestionCard.vue";
 
 const LOAD_SIZE = 10;
@@ -97,10 +97,10 @@ export default class extends Vue {
   allowReplies?: boolean;
 
   @Prop({ default: true })
-  has_more!: boolean;
+  hasMore!: boolean;
 
   @Prop({ default: true })
-  has_more_replies!: boolean;
+  hasMoreReplies!: boolean;
 
   @Prop({ default: false })
   allowPin!: boolean;
@@ -133,14 +133,14 @@ export default class extends Vue {
     this.loading_ancestors = true;
 
     try {
-      const data = (await this.$axios.get('questions/tree/' + first.id, { params: { size: LOAD_SIZE } })).data as { ancestors: ISentQuestion[] };
+      const data = (await this.$axios.get('question/ancestors/' + first.id, { params: { pageSize: LOAD_SIZE } })).data as { ancestors: ISentQuestion[] };
 
       if (data.ancestors.length) {
         this.ancestors = [...data.ancestors, ...this.ancestors];
-        this.has_more = data.ancestors.length >= LOAD_SIZE;
+        this.hasMore = data.ancestors.length >= LOAD_SIZE;
       }
       else {
-        this.has_more = false;
+        this.hasMore = false;
       }
     } catch (e) {
       handleError(e, this);
@@ -159,14 +159,14 @@ export default class extends Vue {
     this.loading_replies = true;
 
     try {
-      const data = (await this.$axios.get('questions/replies/' + last.id, { params: { size: LOAD_SIZE } })).data as ISentQuestion[];
+      const data = (await this.$axios.get('question/replies/' + last.id, { params: { pageSize: LOAD_SIZE } })).data as IPaginatedWithIdsResult<ISentQuestion>;
 
-      if (data.length) {
-        this.replies = [...this.replies, ...data];
-        this.has_more_replies = data.length >= LOAD_SIZE;
+      if (data.items.length) {
+        this.replies = [...this.replies, ...data.items];
+        this.hasMoreReplies = data.items.length >= LOAD_SIZE;
       }
       else {
-        this.has_more_replies = false;
+        this.hasMoreReplies = false;
       }
     } catch (e) {
       handleError(e, this);

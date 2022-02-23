@@ -5,9 +5,9 @@
       :question="question"
       :ancestors="ancestors"
       :replies="replies"
-      :has_more="has_more"
-      :has_more_replies="has_more_replies"
-      :initialImmediateReply="initialImmediateReply"
+      :has-more="hasMore"
+      :has-more-replies="hasMoreReplies"
+      :initial-immediate-reply="initialImmediateReply"
       @close="close()"
       @question-change="changeView($event)"
       @like="$emit('like', $event)"
@@ -33,7 +33,7 @@ import QuestionCard from '~/components/QuestionCard.vue';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import QuestionConversation from '~/components/QuestionConversation/QuestionConversation.vue';
 import { isAxiosError, convertAxiosError, sleep } from '~/utils/helpers';
-import { ISentQuestion } from "~/utils/types/sent.entities.types";
+import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 
 const LOAD_SIZE = 10;
 
@@ -47,7 +47,7 @@ const LOAD_SIZE = 10;
 })
 export default class extends Vue {
   @Prop({ required: true })
-  question_id!: number;
+  questionId!: number;
 
   @Prop({ default: false })
   initialImmediateReply!: boolean;
@@ -57,8 +57,8 @@ export default class extends Vue {
   replies: ISentQuestion[] | null = null;
   error?: any = null;
 
-  has_more!: boolean;
-  has_more_replies!: boolean;
+  hasMore: boolean = true;
+  hasMoreReplies: boolean = true;
 
   loading = false;
 
@@ -79,21 +79,21 @@ export default class extends Vue {
       await Promise.all([
         sleep(500),
         (async () => {
-          const q_and_a = this.$axios.get('questions/tree/' + questionid, { params: { size: LOAD_SIZE } });
-          const res_replies = this.$axios.get('questions/replies/' + questionid, { params: { size: LOAD_SIZE } });
+          const questionTreeRequest = this.$axios.get('question/ancestors/' + questionid, { params: { pageSize: LOAD_SIZE } });
+          const repliesRequest = this.$axios.get('question/replies/' + questionid, { params: { pageSize: LOAD_SIZE } });
 
           const {
             question,
             ancestors
-          } = (await q_and_a).data as { question: ISentQuestion, ancestors: ISentQuestion[] };
+          } = (await questionTreeRequest).data as { question: ISentQuestion, ancestors: ISentQuestion[] };
 
-          const replies = (await res_replies).data as ISentQuestion[];
+          const replies = (await repliesRequest).data as IPaginatedWithIdsResult<ISentQuestion>;
 
           this.question = question;
           this.ancestors = ancestors;
-          this.replies = replies;
-          this.has_more = ancestors.length >= LOAD_SIZE;
-          this.has_more_replies = replies.length >= LOAD_SIZE;
+          this.replies = replies.items;
+          this.hasMore = ancestors.length >= LOAD_SIZE;
+          this.hasMoreReplies = replies.items.length >= LOAD_SIZE;
         })(),
       ]);
     } catch (error) {
@@ -115,7 +115,7 @@ export default class extends Vue {
   }
 
   mounted() {
-    this.loadForQuestion(this.question_id);
+    this.loadForQuestion(this.questionId);
   }
 }
 </script>

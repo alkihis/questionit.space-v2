@@ -1,5 +1,5 @@
 <template>
-  <main>
+  <main v-if="!error">
     <section class="hero is-light">
       <div class="hero-body">
         <div class="container">
@@ -17,9 +17,9 @@
     </section>
 
     <fluid-container>
-      <div v-if="questions && questions.length" class="box" style="margin-top: 2rem">
+      <div v-if="questions && questions.items.length" class="box" style="margin-top: 2rem">
         <question-card-no-reply
-          v-for="item in (questions || [])"
+          v-for="item in questions.items"
           :key="item.id"
           :question="item"
           @submitted="handleSubmitted"
@@ -37,24 +37,26 @@
       </client-only>
     </fluid-container>
   </main>
+
+  <full-error v-else :error="error" />
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator';
 import { isAxiosError, convertAxiosError, makeTitle, handleError } from '~/utils/helpers';
 import { StateChanger } from 'vue-infinite-loading';
-import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply';
-import { ISentQuestion } from "~/utils/types/sent.entities.types";
+import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply.vue';
+import type { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 
 @Component({
   components: {
-    QuestionCardNoReply: QuestionCardNoReply
+    QuestionCardNoReply,
   },
   middleware: 'logged',
   layout: 'default_solid',
   async asyncData({ app }) {
     try {
-      const questions = await app.$axios.$get('questions/waiting', { params: { muted: 'true' } });
+      const questions = await app.$axios.$get('question/waiting', { params: { muted: 'true' } });
 
       return { questions };
     } catch (error) {
@@ -66,10 +68,10 @@ import { ISentQuestion } from "~/utils/types/sent.entities.types";
   },
 })
 export default class extends Vue {
-  questions: ISentQuestion[] | null = null;
-  error?: any;
-  questions_complete = false;
-  delete_loading = false;
+  questions: IPaginatedWithIdsResult<ISentQuestion> | null = null;
+  error: any = null;
+  questionsComplete = false;
+  deleteLoading = false;
 
   head() {
     return {
@@ -78,23 +80,23 @@ export default class extends Vue {
   }
 
   async loadQuestions($state: StateChanger) {
-    if (!this.questions || !this.questions.length || this.questions_complete) {
-      this.questions_complete = true;
+    if (!this.questions || !this.questions.items.length || this.questionsComplete) {
+      this.questionsComplete = true;
       $state.complete();
       return;
     }
 
     try {
-      const last_id = this.questions[this.questions.length - 1].id;
+      const untilId = this.questions.items[this.questions.items.length - 1].id;
       // Get answers
-      const new_questions = (await this.$axios.get('questions/waiting', { params: { until: last_id, muted: 'true' } })).data as ISentQuestion[];
+      const newQuestions = (await this.$axios.get('question/waiting', { params: { untilId, muted: 'true' } })).data as IPaginatedWithIdsResult<ISentQuestion>;
 
-      if (new_questions.length) {
-        this.questions = [...this.questions, ...new_questions];
+      if (newQuestions.items.length) {
+        this.questions.items = [...this.questions.items, ...newQuestions.items];
         $state.loaded();
       }
       else {
-        this.questions_complete = true;
+        this.questionsComplete = true;
         $state.complete();
         return;
         // no answers left.
@@ -106,16 +108,14 @@ export default class extends Vue {
   }
 
   async deleteQuestion(item: ISentQuestion) {
-    if (this.delete_loading) {
+    if (this.deleteLoading) {
       return;
     }
 
-    this.delete_loading = true;
+    this.deleteLoading = true;
 
     try {
-      await this.$axios.delete('questions', {
-        params: { question: item.id },
-      });
+      await this.$axios.delete(`question/${item.id}`);
 
       this.$toast.show(this.$t('question_has_been_deleted'), { type: 'success' });
       this.handleDelete(item.id);
@@ -123,15 +123,19 @@ export default class extends Vue {
       handleError(e, this);
     }
 
-    this.delete_loading = false;
+    this.deleteLoading = false;
   }
 
   handleDelete(id: number) {
-    this.questions = this.questions?.filter(e => e.id !== id) ?? null;
+    if (this.questions) {
+      this.questions.items = this.questions.items.filter(e => e.id !== id);
+    }
   }
 
   handleSubmitted(_: ISentQuestion, original: ISentQuestion) {
-    this.questions = this.questions?.filter(e => e.id !== original.id) ?? null;
+    if (this.questions) {
+      this.questions.items = this.questions.items.filter(e => e.id !== original.id);
+    }
   }
 }
 </script>

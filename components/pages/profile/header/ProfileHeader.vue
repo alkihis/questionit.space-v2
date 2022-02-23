@@ -1,6 +1,6 @@
 <template>
   <div class="user-profile-header">
-    <header class="profile-header" :style="'background-image: url(\'' + user.bannerPictureUrl + '\');'">
+    <header class="profile-header" :style="'background-image: url(\'' + bannerUrl + '\');'">
       <!-- Pen edit banner -->
       <div v-if="edit" class="edit-overlay clickable" @click="clickOnModifyBanner">
         <div class="pen-icon-edit-banner">
@@ -11,7 +11,7 @@
       </div>
 
       <div class="profile">
-        <div class="profile-user-picture" :style="'background-image: url(\'' + user.profilePictureUrl + '\');'">
+        <div class="profile-user-picture" :style="'background-image: url(\'' + ppUrl + '\');'">
           <!-- Pen edit profile picture -->
           <div v-if="edit" class="edit-overlay clickable" @click="clickOnModifyPp" style="border-radius: 25%;">
             <div class="pen-icon-edit-banner">
@@ -97,6 +97,20 @@ export default class extends Vue {
 
   get edit() {
     return this.$accessor.profile.editUser !== null;
+  }
+
+  get bannerUrl() {
+    if (this.edit) {
+      return this.$accessor.profile.editUser!.bannerPictureUrl;
+    }
+    return this.user.bannerPictureUrl;
+  }
+
+  get ppUrl() {
+    if (this.edit) {
+      return this.$accessor.profile.editUser!.profilePictureUrl;
+    }
+    return this.user.profilePictureUrl;
   }
 
   clickOnModifyPp() {

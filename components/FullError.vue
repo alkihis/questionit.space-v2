@@ -81,7 +81,7 @@ export default class extends Vue {
       return translateApiError(this, resp);
     }
     else {
-      const code = this.error.message;
+      const code = this.error?.message ?? '';
       if (code.startsWith('Request failed with status code')) {
         const n_code = Number(code.split('Request failed with status code')[1].trim());
 

@@ -150,22 +150,22 @@ export default class extends Vue {
       headers['Authorization'] = 'Bearer ' + target_user;
     }
 
-    let poll_id: string | undefined = undefined;
+    let pollId: number | undefined = undefined;
     if (this.reply_poll) {
       // Create a poll
       const poll_res = await this.$axios.$post(
-        'polls',
+        'poll',
         { options: this.reply_poll.fields },
         { headers }
-      ) as { poll_id: string, until: number };
+      ) as { id: number, expiration: number };
 
-      poll_id = poll_res.poll_id;
+      pollId = poll_res.id;
     }
 
     try {
       await this.$axios.post(
-        'questions' + (as_anonymous ? '/anonymous' : ''),
-        { to: this.user.id, content: question, in_reply_to: this.question?.id, poll_id },
+        'question' + (as_anonymous ? '/anonymous' : ''),
+        { to: this.user.id, content: question, inReplyToQuestionId: this.question?.id, pollId },
         { headers }
       );
 
