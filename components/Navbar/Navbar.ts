@@ -1,6 +1,6 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator';
 import Badge from '~/components/Badge/Badge';
-import BulmaModal from '../BulmaModal/BulmaModal';
+import BulmaModal from '../BulmaModal.vue';
 import AccountHandler from '../AccountHandler/AccountHandler';
 
 type ValidPage = 'home' | 'search' | 's' | 'notification' | 'waiting';

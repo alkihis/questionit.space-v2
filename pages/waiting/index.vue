@@ -116,7 +116,7 @@ import { Component, Vue } from 'nuxt-property-decorator';
 import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply.vue';
 import { makeTitle, handleError, isAxiosError, convertAxiosError, cancelPushSubscription } from '~/utils/helpers';
 import { StateChanger } from 'vue-infinite-loading';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 
 interface AlreadyReplied {

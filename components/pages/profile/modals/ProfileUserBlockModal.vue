@@ -33,7 +33,7 @@
 
 <script lang="ts">
 import { Component, PropSync, Vue } from 'nuxt-property-decorator';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import { handleError } from '~/utils/helpers';
 
 @Component({

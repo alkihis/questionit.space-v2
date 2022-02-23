@@ -76,7 +76,7 @@
           <div v-else>
             <poll-choice
               :choices="question.attachements.poll.options"
-              :choice="question.answer"
+              :choice="question.answer.content"
             />
           </div>
 
@@ -202,9 +202,9 @@ import QuestionBase from './QuestionBase/QuestionBase';
 import Dropdown from './Dropdown/Dropdown';
 import QuestionText from './QuestionText/QuestionText';
 import AccountChooser from './AccountChooser.vue';
-import ModalImage from './ModalImage/ModalImage';
+import ModalImage from './ModalImage.vue';
 import AskQuestion from './AskQuestion.vue';
-import PollChoice from './PollChoice/PollChoice';
+import PollChoice from './PollChoice.vue';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
 
 @Component({

@@ -28,7 +28,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import QuestionCard from '~/components/QuestionCard.vue';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import QuestionConversation from '~/components/QuestionConversation/QuestionConversation.vue';

@@ -1,5 +1,5 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator';
-import BulmaModal from '../BulmaModal/BulmaModal';
+import BulmaModal from '../BulmaModal.vue';
 import { handleError } from '~/utils/helpers';
 
 declare const Croppie: { new (el: HTMLElement, options?: any): any };

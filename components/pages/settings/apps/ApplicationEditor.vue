@@ -94,7 +94,7 @@
 
 <script lang="ts">
 import { Vue, Component, Prop } from 'nuxt-property-decorator';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import { handleError } from '~/utils/helpers';
 import ApplicationCard from '~/components/pages/settings/apps/ApplicationCard.vue';
 import { allowedPermissions, ISentApplication } from "~/utils/types/sent.entities.types";

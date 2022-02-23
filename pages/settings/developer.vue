@@ -146,7 +146,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import { makeTitle, handleError, isAxiosError, convertAxiosError, QUESTION_IT_REAL_URL } from '~/utils/helpers';
 import ApplicationCard from '~/components/pages/settings/apps/ApplicationCard.vue';
 import ApplicationEditor from '~/components/pages/settings/apps/ApplicationEditor.vue';

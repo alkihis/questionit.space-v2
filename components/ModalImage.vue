@@ -13,4 +13,20 @@
   }
 </style>
 
-<script lang="ts" src="./ModalImage.ts"></script>
+<script lang="ts">
+import { Component, Vue, Prop } from 'nuxt-property-decorator';
+import BulmaModal from './BulmaModal.vue';
+
+@Component({
+  components: {
+    BulmaModal,
+  }
+})
+export default class extends Vue {
+  @Prop({ required: true, type: String }) url!: string;
+
+  get is_video() {
+    return this.url.endsWith('.mp4');
+  }
+}
+</script>

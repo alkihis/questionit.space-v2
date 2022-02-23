@@ -112,7 +112,7 @@ import { handleError } from '~/utils/helpers';
 import QuestionBase from '../QuestionBase/QuestionBase';
 import QuestionText from '../QuestionText/QuestionText';
 import QuestionTextArea from '../QuestionTextArea.vue';
-import PollChoice from '../PollChoice/PollChoice';
+import PollChoice from '../PollChoice.vue';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
 
 const MAX_FILE_SIZE = 2.5 * 1024 * 1024;

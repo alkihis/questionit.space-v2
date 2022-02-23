@@ -63,7 +63,7 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import { makeTitle, handleError, isAxiosError, convertAxiosError } from '~/utils/helpers';
 import ApplicationCard from '~/components/pages/settings/apps/ApplicationCard.vue';
 import { ISentRegistredApplication } from "~/utils/types/sent.entities.types";

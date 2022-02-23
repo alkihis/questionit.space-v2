@@ -68,7 +68,7 @@
 
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
 import { handleError } from '~/utils/helpers';
 import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';

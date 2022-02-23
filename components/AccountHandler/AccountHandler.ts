@@ -1,5 +1,5 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator';
-import BulmaModal from '../BulmaModal/BulmaModal';
+import BulmaModal from '../BulmaModal.vue';
 import Badge from '~/components/Badge/Badge';
 import { cancelPushSubscription, getPushSubscription, handleError } from '~/utils/helpers';
 import { ISentUser } from "~/utils/types/sent.entities.types";

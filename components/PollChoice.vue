@@ -1,8 +1,8 @@
 <template>
   <div :class="{ 'allow-choice': allowChoice, 'poll-choices-root': true }">
-    <div 
-      v-for="ichoice in choices" 
-      :key="ichoice" 
+    <div
+      v-for="ichoice in choices"
+      :key="ichoice"
       :class="{ 'poll-choice': true, 'selected': choice === ichoice, 'nanum': true }"
       @click="$emit('item-select', ichoice)"
     >
@@ -49,7 +49,7 @@
       border: 1px var(--poll-not-selected-border-color) solid;
       color: var(--poll-unanswered-text-color);
       font-weight: 500;
-      
+
       & + .poll-choice {
         margin-top: .5rem;
       }
@@ -63,4 +63,13 @@
   }
 </style>
 
-<script lang="ts" src="./PollChoice.ts"></script>
+<script lang="ts">
+import { Vue, Component, Prop } from 'nuxt-property-decorator';
+
+@Component({})
+export default class extends Vue {
+  @Prop({ required: true, type: Array }) choices!: string[];
+  @Prop({ required: false, type: String, default: '' }) choice!: string;
+  @Prop({ required: false, type: Boolean, default: false }) allowChoice!: boolean;
+}
+</script>

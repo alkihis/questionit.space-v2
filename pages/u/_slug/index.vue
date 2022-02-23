@@ -90,7 +90,7 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
 import { makeTitle, handleError, QUESTION_IT_FULL_URL, FULL_BLACK_LOGO, isAxiosError, convertAxiosError } from '~/utils/helpers';
-import BulmaModal from '~/components/BulmaModal/BulmaModal';
+import BulmaModal from '~/components/BulmaModal.vue';
 // @ts-ignore
 import PullLoader from '~/components/PullLoader.vue';
 import { IPaginatedWithIdsResult, ISentQuestion, ISentUser } from "~/utils/types/sent.entities.types";
