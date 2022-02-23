@@ -1,6 +1,5 @@
 // The serviceworker context can respond to 'push' events and trigger
 // notifications on the registration property
-const SITEURL = 'https://questionit.space';
 
 // New question
 function getBodyForNewQuestion(question) {
@@ -28,14 +27,14 @@ function getBodyForNewQuestion(question) {
     }
   }
 
-  return { title, body, url: SITEURL + '/waiting' };
+  return { title, body, url: '/waiting' };
 }
 
 // Question replied
 function getBodyForNewReplied(question) {
   const is_french = navigator.language.startsWith('fr');
   let title;
-  let body = `${question.content} — ${question.answer}`;
+  let body = `${question.content} — ${question.answer.content}`;
 
   if (is_french) {
     title = `${question.receiver.name} a répondu à votre question !`;
@@ -44,7 +43,7 @@ function getBodyForNewReplied(question) {
     title = `${question.receiver.name} has replied to your question!`;
   }
 
-  return { title, body, url: SITEURL + '/u/' + question.receiver.slug + '/' + question.id };
+  return { title, body, url: '/u/' + question.receiver.slug + '/' + question.id };
 }
 
 // New follower
@@ -61,15 +60,15 @@ function getBodyForNewFollower(user, is_follow_back) {
     body = `${user.name} has subscribed to your questions and will receive them inside his timeline.`;
   }
 
-  return { title, body, url: SITEURL + '/u/' + user.slug };
+  return { title, body, url: '/u/' + user.slug };
 }
 
 // Print the push notification
 function showNotification(title, body, url) {
-  return self.registration.showNotification(title, { 
-    body, 
-    icon: '/images/logo/LogoBlack.png', 
-    tag: 'question-send-tag', 
+  return self.registration.showNotification(title, {
+    body,
+    icon: '/images/logo/LogoBlack.png',
+    tag: 'question-send-tag',
     data: {
       url
     },
@@ -89,7 +88,7 @@ function sendToEveryone(payload) {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow(event.notification.data.url)
+    self.clients.openWindow(event.notification.data.url)
   );
 });
 
@@ -97,23 +96,23 @@ self.addEventListener('push', event => {
   const data = JSON.parse(event.data.text());
   let question, type, payload, client_payload;
 
-  if (data.new_question) {
-    question = data.new_question;
+  if (data.question && !data.question.answer) {
+    question = data.question;
     type = 'question-worker';
     payload = getBodyForNewQuestion(question);
     client_payload = { question, type, id: String(data.id) };
   }
-  else if (data.answered_question) {
-    question = data.answered_question;
+  else if (data.question) {
+    question = data.question;
     type = 'answered-worker';
     payload = getBodyForNewReplied(question);
     client_payload = { question, type, id: String(data.id) };
   }
-  else if (data.new_follower) {
-    client_payload = { 
-      user: data.new_follower, 
-      type: 'follow-worker', 
-      follow_back: data.follow_back || false,
+  else if (data.user) {
+    client_payload = {
+      user: data.user,
+      type: 'follow-worker',
+      follow_back: data.user.relationship?.following || false,
       id: String(data.id),
     };
 
