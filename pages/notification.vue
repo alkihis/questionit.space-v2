@@ -14,22 +14,22 @@
     </section>
 
     <fluid-container class="root">
-      <div class="text-intro" v-if="first_load_complete && timeline.length">
+      <div class="text-intro" v-if="firstLoadComplete && timeline.items.length">
         <span class="remove-all tag is-dark" @click="deleteAll()">
           {{ $t('remove_all') }}
         </span>
       </div>
 
-      <div class="notifications" v-if="timeline.length || (timeline.length === 0 && completed)">
+      <div class="notifications" v-if="timeline.items.length || (timeline.items.length === 0 && completed)">
         <notification-card
-          v-for="item in timeline"
+          v-for="item in timeline.items"
           :notification="item"
           :key="item.id"
           :deleted="deleted.includes(item.id)"
           @delete="deleteNotification($event)"
         />
 
-        <div v-if="timeline.length === 0 && completed" class="no-notifications">
+        <div v-if="timeline.items.length === 0 && completed" class="no-notifications">
           <p class="nanum">
             {{ $t('no_notifications_to_show') }}.
           </p>
@@ -46,9 +46,9 @@
 <script lang="ts">
 import { Component, Vue } from "nuxt-property-decorator";
 import { handleError, makeTitle } from "~/utils/helpers";
-import NotificationCard from "~/components/NotificationCard/NotificationCard";
+import NotificationCard from "~/components/NotificationCard.vue";
 import { StateChanger } from "vue-infinite-loading";
-import { ENotificationType, ISentNotification, ISentQuestion, ISentUser } from "~/utils/types/sent.entities.types";
+import { ENotificationType, IPaginatedWithIdsResult, ISentNotification, ISentQuestion, ISentUser } from '~/utils/types/sent.entities.types';
 
 interface SwPayload {
   user?: ISentUser;
@@ -70,13 +70,13 @@ const FETCH_SIZE = 10;
   scrollToTop: true,
 })
 export default class extends Vue {
-  timeline: ISentNotification[] = [];
+  timeline: IPaginatedWithIdsResult<ISentNotification> = { items: [] };
   deleted: number[] = [];
   completed = false;
-  first_load_complete = false;
+  firstLoadComplete = false;
 
-  get unread_count() {
-    return this.$accessor.waitingNotificationsCount + this.timeline.filter(e => !e.seen).length;
+  get unreadCount() {
+    return this.$accessor.waitingNotificationsCount + this.timeline.items.filter(e => !e.seen).length;
   }
 
   async loadItems($state: StateChanger) {
@@ -86,28 +86,28 @@ export default class extends Vue {
     }
 
     try {
-      const notifs = (await this.$axios.get('notifications', {
-        params: { size: FETCH_SIZE, until: this.timeline[this.timeline.length - 1]?.id }
-      })).data as ISentNotification[];
+      const notifs = (await this.$axios.get('notification', {
+        params: { pageSize: FETCH_SIZE, untilId: this.timeline.items[this.timeline.items.length - 1]?.id }
+      })).data as IPaginatedWithIdsResult<ISentNotification>;
 
-      if (this.timeline.length === 0 && notifs.length === 0) {
+      if (this.timeline.items.length === 0 && notifs.items.length === 0) {
         this.$accessor.setNotificationWait(0);
       }
 
-      this.timeline = [...this.timeline, ...notifs];
+      this.timeline.items = [...this.timeline.items, ...notifs.items];
 
-      const number_of_unseen = notifs.filter(e => !e.seen).length;
-      const notif_count = this.$accessor.waitingNotificationsCount;
+      const numberOfUnseen = notifs.items.filter(e => !e.seen).length;
+      const notificationCount = this.$accessor.waitingNotificationsCount;
 
-      if (notif_count - number_of_unseen >= 0) {
-        this.$accessor.setNotificationWait(notif_count - number_of_unseen);
+      if (notificationCount - numberOfUnseen >= 0) {
+        this.$accessor.setNotificationWait(notificationCount - numberOfUnseen);
       }
       else {
         this.$accessor.setNotificationWait(0);
       }
 
-      this.first_load_complete = true;
-      if (notifs.length < FETCH_SIZE) {
+      this.firstLoadComplete = true;
+      if (notifs.items.length < FETCH_SIZE) {
         $state.complete();
         this.completed = true;
       }
@@ -127,19 +127,19 @@ export default class extends Vue {
   }
 
   async deleteAll() {
-    this.deleted.push(...this.timeline.map(e => e.id));
+    this.deleted.push(...this.timeline.items.map(e => e.id));
     let previous = this.$accessor.waitingNotificationsCount;
 
     setTimeout(() => {
       if (previous !== -1) {
         this.$accessor.setNotificationWait(0);
         this.completed = true;
-        this.timeline = [];
+        this.timeline.items = [];
       }
     }, 350);
 
     try {
-      await this.$axios.delete('notifications/all');
+      await this.$axios.delete('notification/all');
       this.$toast.success(this.$t('notifications_deleted'));
     } catch (e) {
       this.$accessor.setNotificationWait(previous);
@@ -152,13 +152,13 @@ export default class extends Vue {
     this.deleted.push(item.id);
 
     setTimeout(() => {
-      const tl_index = this.timeline.findIndex(e => e.id === item.id);
+      const tl_index = this.timeline.items.findIndex(e => e.id === item.id);
 
       if (tl_index !== -1) {
-        if (!this.timeline[tl_index].seen) {
+        if (!this.timeline.items[tl_index].seen) {
           this.$accessor.decrementNotificationWait();
         }
-        this.timeline = this.timeline.filter(e => e.id !== item.id);
+        this.timeline.items = this.timeline.items.filter(e => e.id !== item.id);
       }
 
       const to_dl = this.deleted.indexOf(item.id);
@@ -167,7 +167,7 @@ export default class extends Vue {
     }, 350);
 
     try {
-      await this.$axios.delete('notifications/' + item.id);
+      await this.$axios.delete('notification/' + item.id);
     } catch (e) {
       handleError(e, this);
     }
@@ -181,31 +181,31 @@ export default class extends Vue {
       return;
 
     if (evt.data.type === 'question-worker') {
-      this.timeline = [{
+      this.timeline.items = [{
         id: Number(evt.data.id),
         createdAt: new Date().toISOString(),
         seen: false,
         type: ENotificationType.Question,
         question: evt.data.question
-      }, ...this.timeline];
+      }, ...this.timeline.items];
     }
     else if (evt.data.type === 'answered-worker') {
-      this.timeline = [{
+      this.timeline.items = [{
         id: Number(evt.data.id),
         createdAt: new Date().toISOString(),
         seen: false,
         type: ENotificationType.Answered,
         question: evt.data.question
-      }, ...this.timeline];
+      }, ...this.timeline.items];
     }
     else if (evt.data.type === 'follow-worker') {
-      this.timeline = [{
+      this.timeline.items = [{
         id: Number(evt.data.id),
         createdAt: new Date().toISOString(),
         seen: false,
         type: evt.data.follow_back ? ENotificationType.FollowBack : ENotificationType.Follow,
         user: evt.data.user,
-      }, ...this.timeline];
+      }, ...this.timeline.items];
     }
   }
 

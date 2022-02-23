@@ -45,7 +45,7 @@ export default class extends Vue {
     this.deleteLoading = true;
 
     try {
-      await this.$axios.delete('questions', { params: { question: question.id } });
+      await this.$axios.delete(`question/${question.id}`);
       this.$emit('deleted');
     } catch (e) {
       handleError(e, this);
