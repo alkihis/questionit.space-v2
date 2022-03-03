@@ -1,9 +1,8 @@
 import { AxiosError } from 'axios';
 // @ts-ignore
 import RawEmojiLib from 'emojilib';
-import { ISentQuestion } from "~/utils/types/sent.entities.types";
-import { Vue } from "nuxt-property-decorator";
-import { EApiError, IApiError } from "~/utils/types/error.types";
+import { Vue } from 'nuxt-property-decorator';
+import { EApiError, IApiError } from '~/utils/types/error.types';
 
 interface IEmojiLib {
   ordered: string[];
@@ -367,6 +366,16 @@ export function numberFormat(n: number) {
   return n;
 }
 
+export function isTokenExpiresSoon(expireDate: string) {
+  const date = new Date(expireDate);
+  const now = new Date();
+
+  // In less than 1 week
+  const oneWeek = 1000 * 60 * 60 * 24 * 7;
+
+  return now.getTime() + oneWeek > date.getTime();
+}
+
 export function translateApiError(cmp: Vue, error: IApiError) : string | { toString(): string; } {
   const code = EApiError[error.code];
 
@@ -374,62 +383,4 @@ export function translateApiError(cmp: Vue, error: IApiError) : string | { toStr
     return cmp.$i18n.t('errors.' + code).toString() + '.';
   }
   return cmp.$i18n.t('unknown_error');
-}
-
-export async function isWebAuthAvailable() {
-  return typeof PublicKeyCredential !== 'undefined' &&
-    await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().catch(() => false);
-}
-
-export async function generateWebAuthCreationPublicKey(vue: Vue) {
-  if (!vue.$accessor.loggedUser)
-    throw new Error('Must be logged');
-
-  const challenge = await vue.$axios.$get('auth/webauthn/challenge');
-  const domain = window.location.hostname === 'localhost' ? 'localhost' : 'questionit.space';
-
-  const credential = await navigator.credentials.create({
-    publicKey: {
-      challenge: Uint8Array.from(challenge.string as string, c => c.charCodeAt(0)),
-      rp: {
-        name: 'QuestionIt.space',
-        id: domain,
-      },
-      user: {
-        id: Uint8Array.from(vue.$accessor.loggedUser.id.toString(), c => c.charCodeAt(0)),
-        name: vue.$accessor.loggedUser.slug,
-        displayName: vue.$accessor.loggedUser.name,
-      },
-      pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-      timeout: 60000,
-      attestation: 'none'
-    }
-  }) as PublicKeyCredential | null;
-
-  if (!credential)
-    throw new Error('Login flow rejected');
-
-  if (credential.type !== 'public-key')
-    throw new Error('Invalid public key');
-
-  const attestation = new Uint8Array((credential.response as any).attestationObject as ArrayBuffer);
-  const decoder = new TextDecoder();
-
-  const to_send = {
-    id: credential.id,
-    response: {
-      clientData: JSON.parse(decoder.decode(credential.response.clientDataJSON)),
-      // It produce a number[]. Its ugly, but binary data through JSON (or simply JS strings) is a real pain.
-      attestation: Array.from(attestation),
-    },
-    challenge: challenge.string,
-  };
-
-  // Send data to server
-  await vue.$axios.post('auth/webauthn/create', to_send);
-
-  // Store the credential ID
-  vue.$cookies.set('credential_id', credential.id, { expires: new Date('2099-01-01') });
-
-  return to_send;
 }

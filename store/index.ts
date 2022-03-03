@@ -1,8 +1,8 @@
-import { Context } from '@nuxt/types';
+import { Context, NuxtAppOptions } from '@nuxt/types';
 import { ActionContext } from 'vuex';
 import { getAccessorType } from 'typed-vuex';
 import { v4 as uuid } from 'uuid';
-import { isAxiosError, TOKEN_UNVALIDATED_500_ERROR } from '~/utils/helpers';
+import { isAxiosError, isTokenExpiresSoon, TOKEN_UNVALIDATED_500_ERROR } from '~/utils/helpers';
 import { ISentUser } from "~/utils/types/sent.entities.types";
 import { EAllowedThemes } from "~/utils/types/theme.types";
 import '~/utils/types/globals.types';
@@ -132,6 +132,9 @@ export const mutations = {
 };
 
 export const getters = {
+  currentToken(state: GlobalState) {
+    return state.token!;
+  },
   isLogged(state: GlobalState) {
     return state.token && state.loggedUser;
   },
@@ -150,88 +153,109 @@ export const getters = {
 };
 
 export const actions = {
-  async nuxtServerInit({ commit }: ActionContext<GlobalState, GlobalState>, { app }: Context) {
-    let token: string | null = null, sessionId: string | null = null;
+  async makeLoginFromCookieToken({ commit }: ActionContext<GlobalState, GlobalState>, { app, tokens }: { app: NuxtAppOptions, tokens: string }) {
+    const savedTokens: string[] = tokens.split('|');
+    const loginInformation: { user: ISentUser, expiresAt: string, token: string, newToken: string | undefined }[] = [];
+    const loginErrors: { code: number, token: string }[] = [];
+
+    const getRefreshedToken = async (token: string) => {
+      try {
+        const res = await app.$axios.$post('token/refresh', { headers: { 'Authorization': `Bearer ${token}` } });
+        return res.token;
+      } catch (e) {
+        return undefined;
+      }
+    };
+
+    const doLogin = async (token: string) => {
+      try {
+        const res = await app.$axios.$get('token/user', { headers: { 'Authorization': `Bearer ${token}` } });
+        let newToken: string | undefined;
+
+        if (isTokenExpiresSoon(res.expiresAt)) {
+          newToken = await getRefreshedToken(token);
+        }
+
+        loginInformation.push({
+          user: res.user,
+          expiresAt: res.expiresAt,
+          token,
+          newToken,
+        });
+      } catch (e) {
+        if (isAxiosError(e) && e.response && e.response.status) {
+          loginErrors.push({ token, code: e.response.status });
+        }
+        else {
+          // Connect error
+          loginErrors.push({ token, code: 500 });
+        }
+      }
+    };
+
+    // Log each user correctly
+    await Promise.all(savedTokens.map(doLogin));
+
+    const tokensToKeep = [
+      ...loginInformation.map(i => i.newToken || i.token),
+      ...loginErrors.filter(e => e.code === 500).map(e => e.token),
+    ];
+
+    if (tokensToKeep.length) {
+      app.$cookies.set('token', tokensToKeep.join('|'), { path: '/', expires: new Date('2099-01-01') });
+    } else {
+      app.$cookies.remove('token', { path: '/' });
+    }
+
+    if (loginErrors.some(e => e.code !== 500)) {
+      const unloggedTokens = loginErrors.filter(e => e.code !== 500).map(e => e.token);
+      commit('setHasBeenUnlogged', unloggedTokens);
+    } else if (loginErrors.length) {
+      // All errros are 500
+      commit('setHasBeenUnlogged', [TOKEN_UNVALIDATED_500_ERROR]);
+    }
+
+    // Set logged users according to login order (token order)
+    const loggedUsers = savedTokens
+      .map(token => loginInformation.find(i => i.token === token)!)
+      .filter(e => e);
+
+    if (!loggedUsers.length) {
+      return;
+    }
+
+    // Add every user to store
+    for (const user of loggedUsers) {
+      commit('addLoggedUser', [user.user, user.newToken || user.token]);
+    }
+
+    // Lookup for currently logged user, and set it
+    const currentToken = app.$cookies.get('current_token');
+    const currentLoggedUser = loggedUsers.find(u => u.token === currentToken);
+
+    if (currentLoggedUser) {
+      if (currentLoggedUser.newToken) {
+        app.$cookies.set('current_token', currentLoggedUser.newToken, { path: '/', expires: new Date('2099-01-01') });
+      }
+
+      commit('setLoggedUser', currentLoggedUser.user);
+      commit('setToken', currentLoggedUser.newToken || currentLoggedUser.token);
+    } else { // Fallback to any user
+      const user = loggedUsers[0];
+
+      commit('setLoggedUser', user.user);
+      commit('setToken', user.newToken || user.token);
+      app.$cookies.set('current_token', user.newToken || user.token, { path: '/', expires: new Date('2099-01-01') });
+    }
+  },
+
+  async nuxtServerInit({ commit, dispatch, getters }: ActionContext<GlobalState, GlobalState>, { app }: Context) {
+    let sessionId: string | null = null;
 
     if (app.$cookies) {
       if (app.$cookies.get('token') !== undefined) {
-        const savedTokens: string[] = app.$cookies.get('token').split('|');
-        const logged: ISentUser[] = [];
-        const errors: [string, number][] = [];
-        const validTokens: string[] = [];
-
-        // Log each user correctly
-        // todo fix: users are not in the same order when page is refreshed
-        await Promise.all(savedTokens.map(async t => {
-          try {
-            const { data: res } = await app.$axios.get('token/user', { headers: { 'Authorization': 'Bearer ' + t } })
-            logged.push(res.user);
-            validTokens.push(t);
-          } catch (e) {
-            if (isAxiosError(e) && e.response && e.response.status) {
-              errors.push([t, e.response.status]);
-            }
-            else {
-              // Connect error
-              errors.push([t, 500]);
-            }
-          }
-        }));
-
-        const loggedTokens = [...validTokens];
-
-        if (errors.length && errors.some(e => e[1] < 500)) {
-          commit('setHasBeenUnlogged', errors.filter(e => e[1] < 500).map(e => e[0]));
-
-          if (logged.length) {
-            for (const [t, c] of errors) {
-              if (c >= 500) {
-                // server error, add token as valid
-                validTokens.push(t);
-              }
-            }
-
-            // Refresh cookie token
-            app.$cookies.set('token', validTokens.join('|'), { path: '/', expires: new Date("2099-01-01") });
-          }
-          // No user logged, every user has been unvalidated
-          else {
-            token = null;
-            app.$cookies.remove('token', { path: '/' });
-          }
-        }
-        else if (errors.length && errors.every(e => e[1] >= 500)) {
-          commit('setHasBeenUnlogged', [TOKEN_UNVALIDATED_500_ERROR]);
-        }
-
-        if (logged.length) {
-          // Add every user to store
-          for (let i = 0; i < logged.length; i++) {
-            const user = logged[i];
-            const t = loggedTokens[i];
-            commit('addLoggedUser', [user, t]);
-          }
-
-          // Set current logged user
-          if (loggedTokens.includes(app.$cookies.get('current_token'))) {
-            const current = app.$cookies.get('current_token');
-            const currentIndex = loggedTokens.findIndex(e => e === current);
-
-            const usr = logged[currentIndex];
-            token = loggedTokens[currentIndex];
-
-            commit('setLoggedUser', usr);
-          }
-          else {
-            // Logged user is first token
-            const usr = logged[0];
-            const tok = loggedTokens[0];
-
-            token = tok;
-            commit('setLoggedUser', usr);
-            app.$cookies.set('current_token', tok, { path: '/', expires: new Date("2099-01-01") });
-          }
-        }
+        const cookieToken = app.$cookies.get('token');
+        await dispatch('makeLoginFromCookieToken', { app, tokens: cookieToken });
       }
 
       if (app.$cookies.get('session_id') !== undefined) {
@@ -256,15 +280,12 @@ export const actions = {
       }
     }
 
-    // Register token
-    commit('setToken', token);
-
     // Register session id
     commit('setSessionId', sessionId);
 
     // Register credential helper
-    if (token) {
-      app.$axios.setToken(token, 'Bearer');
+    if (getters.currentToken) {
+      app.$axios.setToken(getters.currentToken, 'Bearer');
     }
     else {
       app.$axios.setToken(sessionId || uuid(), 'Session');
