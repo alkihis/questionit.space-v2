@@ -81,9 +81,7 @@
     <div v-else-if="error">
       <full-error :error="error" />
     </div>
-    <div v-else>
-      <full-error :title="$t('unknown_error')" />
-    </div>
+    <div v-else />
   </div>
 </template>
 
@@ -116,8 +114,6 @@ export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
   async asyncData({ app, params, redirect }) {
     const slug = params.slug as string;
 
-    app.$accessor.profile.reset();
-
     if (!slug) {
       return redirect(app.localePath('/'));
     }
@@ -131,13 +127,15 @@ export const SLUG_REGEX = /^[a-z_-][a-z0-9_-]{1,19}$/i;
         user = (await app.$axios.get('user/slug/' + slug)).data as ISentUser;
       }
 
-      app.$accessor.profile.setUser(user);
-
       // Get answers
       const answers: IPaginatedWithIdsResult<ISentQuestion> = await app.$axios.$get('question/answer/user/' + user.id);
 
+      app.$accessor.profile.reset();
+      app.$accessor.profile.setUser(user);
       app.$accessor.profile.setAnswers(answers);
     } catch (error) {
+      app.$accessor.profile.reset();
+
       if (isAxiosError(error) && error.response) {
         error = convertAxiosError(error);
       }
