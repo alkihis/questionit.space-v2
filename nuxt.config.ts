@@ -106,7 +106,7 @@ export default {
     '@nuxtjs/dotenv',
     'cookie-universal-nuxt',
     [
-      'nuxt-i18n',
+      '@nuxtjs/i18n',
       i18nConfig,
     ],
     '@nuxtjs/proxy',

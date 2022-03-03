@@ -23,6 +23,6 @@ export default {
     // Set to always redirect to value stored in the cookie, not just once
     alwaysRedirect: true,
     // If no locale for the browsers locale is a match, use this one as a fallback
-    fallbackLocale: 'en'
+    fallbackLocale: 'en',
   },
 };

@@ -33,7 +33,7 @@
     "js-cookie": "^2.2.1",
     "mini-toastr": "^0.8.1",
     "nuxt": "^2.15.2",
-    "nuxt-i18n": "^6.20.3",
+    "@nuxtjs/i18n": "^7.2.0",
     "nuxt-property-decorator": "^2.9.1",
     "nuxt-typed-vuex": "^0.1.22",
     "php-date": "^3.0.0",
