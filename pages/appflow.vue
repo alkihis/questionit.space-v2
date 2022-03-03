@@ -246,7 +246,7 @@ type ValidatedToken = { pin: string } | { validator: string, url: string };
   components: {
   },
   scrollToTop: true,
-  async asyncData({ route, app, store, redirect }) {
+  async asyncData({ route, app, redirect }) {
     if (!app.$accessor.isLogged) {
       // Store redirect app flow
       if (typeof route.query.token === 'string') {

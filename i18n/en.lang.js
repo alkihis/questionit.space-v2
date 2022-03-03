@@ -322,6 +322,7 @@ export default {
     pinQuestion: 'Manage profile pinned question',
     readRelationship: 'Read blocked and followed accounts',
     manageBlockedWords: 'Manage muted words',
+    refreshToken: 'Allow token to be refreshed',
   },
 
   // Explainations to permissions (end-user page):
@@ -339,6 +340,7 @@ export default {
     pinQuestion: 'Define or delete your pinned question',
     readRelationship: 'See who you follow and block',
     manageBlockedWords: 'Manage your muted words',
+    refreshToken: 'Keep a persistent connection to your account'
   },
 
   emoji_picker: {

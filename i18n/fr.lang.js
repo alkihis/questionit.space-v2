@@ -260,7 +260,7 @@ export default {
   dev_read_profile_informations: 'Lire les informations du profil',
   approve: 'Autoriser',
   please_enter_pin_in_app: 'Veuillez entrer ce code dans l\'application ayant initié la connexion pour continuer. Vous pourrez ensuite fermer cette fenêtre.',
-  auth_flow_denied: 'Vous avez refusé le processus d\'authentification.',
+  auth_flow_denied: 'Vous avez refusé le processus de connexion.',
   registred_applications: 'Applications autorisées',
   see_which_app_has_access_to_your_account: 'Identifiez les applications ayant accès à votre compte',
   applications: 'Applications',
@@ -297,7 +297,7 @@ export default {
   regenerate_modal_text: 'L\'ensemble des clés d\'accès générées précédemment seront perdues. Vous devrez mettre à jour vos applications pour utiliser la nouvelle clé. Voulez-vous vraiment continuer ?',
   regenerate_success: 'La clé d\'application a été regénérée avec succès.',
   close: 'Fermer',
-  test_login_flow: 'Tester l\'authentification',
+  test_login_flow: 'Tester la connexion',
   generated_test_data: 'Données générées',
   documentation: 'Documentation de l\'API',
 
@@ -322,6 +322,7 @@ export default {
     pinQuestion: 'Gérer la question épinglée du profil',
     readRelationship: 'Lire les comptes suivis et bloqués',
     manageBlockedWords: 'Gérer les mots-clés masqués',
+    refreshToken: 'Autoriser la regénération du jeton de connexion',
   },
 
   // Explainations to permissions (end-user page):
@@ -339,6 +340,7 @@ export default {
     pinQuestion: 'Définir ou supprimer votre question épinglée',
     readRelationship: 'Lire les comptes que vous suivez et bloquez',
     manageBlockedWords: 'Gérer vos mots-clés masqués',
+    refreshToken: 'Garder une connexion persistente à votre compte',
   },
 
   emoji_picker: {
