@@ -301,6 +301,12 @@ export default {
   generated_test_data: 'Données générées',
   documentation: 'Documentation de l\'API',
 
+  // v2
+  is_user_hashtag_active: 'Publier les réponses avec un #hashtag',
+  is_user_hashtag_active_description: 'Les tweets générés lors d\'une réponse à une question contiendront ce hashtag',
+  is_user_hashtag_active_help: '16 caractères maximum, lettres et chiffres uniquement',
+  use_rocket_emoji_on_questions: 'Préfixer les tweets générés lors d\'une réponse d\'un emoji 🚀',
+
   // Explainations to permissions (developer-user page):
   developer_user_permissions: {
     sendQuestion: 'Envoyer des questions',

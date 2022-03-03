@@ -301,6 +301,12 @@ export default {
   generated_test_data: 'Generated data',
   documentation: 'API documentation',
 
+  // v2
+  is_user_hashtag_active: 'Publish answers with an #hashtag',
+  is_user_hashtag_active_description: 'Tweets generated when you reply a question will contain that hashtag',
+  is_user_hashtag_active_help: 'Numbers & letters only, maximum 16 characters',
+  use_rocket_emoji_on_questions: 'Prefix generated tweets when your reply with a 🚀 emoji',
+
   // Explainations to permissions (developer-user page):
   developer_user_permissions: {
     sendQuestion: 'Send questions',

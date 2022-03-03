@@ -38,6 +38,7 @@ export interface ISentUser {
   dropQuestionsOnBlockedWord?: boolean;
   safeMode?: boolean;
   useRocketEmojiInQuestions?: boolean;
+  useHashtagInQuestions?: string;
 }
 
 export interface ISentUserCounts {

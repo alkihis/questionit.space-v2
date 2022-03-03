@@ -60,6 +60,21 @@
       </label>
     </div>
 
+    <!-- Rocket emoji field -->
+    <div class="field">
+      <input
+        type="checkbox"
+        value="be-seen"
+        class="is-checkradio is-circle is-info"
+        id="use-rocket-emoji-on-questions"
+        v-model="useRocketEmojiInQuestions"
+        :disabled="editLoad"
+      >
+      <label class="checkbox" for="use-rocket-emoji-on-questions">
+        {{ $t('use_rocket_emoji_on_questions') }}
+      </label>
+    </div>
+
     <!-- Safe mode -->
     <div class="field">
       <input
@@ -78,8 +93,45 @@
       {{ $t('safe_mode_tooltip') }}
     </div>
 
+    <!-- Use custom hashtag -->
+    <div class="field">
+      <input
+        type="checkbox"
+        value="be-seen"
+        class="is-checkradio is-circle is-info"
+        id="is-user-hashtag-active"
+        v-model="isUserHashtagActive"
+        :disabled="editLoad"
+      >
+      <label class="checkbox" for="is-user-hashtag-active">
+        {{ $t('is_user_hashtag_active') }}
+      </label>
+    </div>
+    <div class="field-explaination">
+      {{ $t('is_user_hashtag_active_description') }}
+    </div>
+
+    <div class="use-hashtag-wrapper">
+      <div class="field">
+        <div class="control has-icons-left">
+          <input
+            :class="{ input: true, 'is-danger': !isHashtagValid }"
+            type="text"
+            placeholder="questionitspace"
+            v-model="useHashtagInQuestions"
+            :disabled="editLoad || !isUserHashtagActive"
+          >
+          <span class="icon is-small is-left">
+              <i class="fas fa-hashtag"></i>
+            </span>
+        </div>
+        <p :class="{ help: true, 'is-danger': !isHashtagValid, 'is-light': !isUserHashtagActive }">{{ $t('is_user_hashtag_active_help') }}</p>
+      </div>
+    </div>
+
     <div class="buttons validate-btn">
       <button
+        :disabled="!isHashtagValid"
         :class="{ 'button': true, 'is-link': true, 'is-light': true, 'is-loading': editLoad }"
         @click="update()"
       >
@@ -100,10 +152,15 @@ import { handleError } from "~/utils/helpers";
 export default class extends Vue {
   user: ISentUser;
   editLoad = false;
+  isUserHashtagActive = false;
 
   constructor() {
     super();
     this.user = { ...this.$accessor.loggedUser! };
+
+    if (this.user.useHashtagInQuestions) {
+      this.isUserHashtagActive = true;
+    }
   }
 
   get postToTwitter() {
@@ -146,6 +203,26 @@ export default class extends Vue {
     this.user.safeMode = v;
   }
 
+  get useHashtagInQuestions() {
+    return this.user.useHashtagInQuestions ?? '';
+  }
+
+  set useHashtagInQuestions(value: string) {
+    this.user.useHashtagInQuestions = value;
+  }
+
+  get isHashtagValid() {
+    return this.useHashtagInQuestions.length <= 16 && this.useHashtagInQuestions.match(/^([A-Z_-]+[A-Z0-9_-]*)?$/ig);
+  }
+
+  get useRocketEmojiInQuestions() {
+    return this.user.useRocketEmojiInQuestions ?? false;
+  }
+
+  set useRocketEmojiInQuestions(value: boolean) {
+    this.user.useRocketEmojiInQuestions = value;
+  }
+
   async update() {
     if (this.editLoad)
       return;
@@ -160,6 +237,8 @@ export default class extends Vue {
         visible: this.user.visible,
         dropQuestionsOnBlockedWord: this.user.dropQuestionsOnBlockedWord,
         safeMode: this.user.safeMode,
+        useRocketEmojiInQuestions: this.user.useRocketEmojiInQuestions,
+        useHashtagInQuestions: this.isUserHashtagActive && this.useHashtagInQuestions ? this.useHashtagInQuestions : '',
       }) as ISentUser;
 
       this.user = resp;
@@ -180,5 +259,11 @@ export default class extends Vue {
   margin-top: -.5rem;
   color: var(--settings-field-explaination);
   font-size: .9rem;
+  margin-bottom: .5rem;
+}
+
+.use-hashtag-wrapper {
+  margin-top: .5rem;
+  padding-left: 2rem;
 }
 </style>

@@ -87,7 +87,7 @@ export default class extends Vue {
 
     try {
       const notifs = (await this.$axios.get('notification', {
-        params: { pageSize: FETCH_SIZE, untilId: this.timeline.items[this.timeline.items.length - 1]?.id }
+        params: { pageSize: FETCH_SIZE, untilId: this.timeline.items[this.timeline.items.length - 1]?.id, markAsSeen: true }
       })).data as IPaginatedWithIdsResult<ISentNotification>;
 
       if (this.timeline.items.length === 0 && notifs.items.length === 0) {
