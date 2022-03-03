@@ -343,7 +343,7 @@ export default class extends Vue {
     this.notification.user.relationship!.following = true;
 
     try {
-      await this.$axios.post('relationships/' + this.notification.user.id);
+      await this.$axios.post('relationship/' + this.notification.user.id);
       this.$toast.success(this.$t('followed_user', { name: this.notification.user.name }));
     } catch (e) {
       handleError(e, this);

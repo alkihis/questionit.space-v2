@@ -51,7 +51,7 @@
       <profile-question-delete-modal :question.sync="deleteQuestionModal" @deleted="onQuestionDeleted" />
 
       <!-- Modal for user block -->
-      <profile-user-block-modal :user.sync="blockUserModal" />
+      <profile-user-block-modal :open.sync="blockUserModal" />
 
       <!-- Modal for pin question -->
       <profile-pin-question-modal :question.sync="pinQuestionModal" @pinned="onPinnedQuestion" />
@@ -298,7 +298,7 @@ export default class extends Vue {
     const before = this.relationship.following;
 
     try {
-      await this.$axios.post('relationships/' + this.user.id);
+      await this.$axios.post('relationship/' + this.user.id);
       this.$accessor.profile.updateRelationship({ following: true });
       this.$toast.success(this.$t('followed_user', { name: this.user.name }));
 
@@ -322,7 +322,7 @@ export default class extends Vue {
     const before = this.relationship.following;
 
     try {
-      await this.$axios.delete('relationships/' + this.user.id);
+      await this.$axios.delete('relationship/' + this.user.id);
       this.$accessor.profile.updateRelationship({ following: false });
       this.$toast.success(this.$t('unfollowed_user', { name: this.user.name }));
 

@@ -57,10 +57,11 @@ export default class extends Vue {
 
     if (action === 'block') {
       try {
-        await this.$axios.post('blocks/' + this.$accessor.profile.user!.id);
+        await this.$axios.post('user/block/' + this.$accessor.profile.user!.id);
         this.$toast.success(this.$t('user_has_been_block'));
 
         this.$accessor.profile.updateRelationshipAfterBlock();
+        this.toBlock = false;
       } catch (e) {
         handleError(e, this);
       }
@@ -69,10 +70,11 @@ export default class extends Vue {
     }
     else {
       try {
-        await this.$axios.delete('blocks/' + this.$accessor.profile.user!.id);
+        await this.$axios.delete('user/block/' + this.$accessor.profile.user!.id);
         this.$toast.success(this.$t('user_has_been_unblock'));
 
         this.$accessor.profile.updateRelationshipAfterUnblock();
+        this.toBlock = false;
       } catch (e) {
         handleError(e, this);
       }
