@@ -307,6 +307,139 @@ export default {
   is_user_hashtag_active_help: 'Numbers & letters only, maximum 16 characters',
   use_rocket_emoji_on_questions: 'Prefix generated tweets when your reply with a 🚀 emoji',
 
+  mentions_page: {
+    preambule: 'Preamble',
+    preambule_1: `
+        The purpose of these "general conditions of use" is to provide a framework
+        of the terms of provision of the services of the QuestionIt.space site and their use by the "user".
+    `,
+    preambule_2: `
+        The general conditions of use must be accepted by any user wishing to access the site.
+         They constitute the contract between the site and the user.
+         Access to the site by the user signifies his acceptance of these general conditions of use.
+    `,
+    preambule_3: `
+        In the event of non-acceptance of the general conditions of use stipulated in this contract, the user must renounce
+         access to the services offered by the site.
+         QuestionIt.space reserves the right to unilaterally modify the content of these general conditions of use at any time.
+    `,
+    privacy_policy: `Privacy policy`,
+    privacy_policy_1: `This is the subject of a dedicated page, which you can {link}.`,
+    privacy_policy_find_here: `find here`,
+    legal_mentions: `Legal mentions`,
+    legal_mentions_1: `This website is created and maintened by {name} living in {location}.`,
+    legal_mentions_2: `The site is hosted in France on the company's servers:`,
+    services: `Services`,
+    services_1: `QuestionIt.space is a site allowing free access, subject to obtaining a Twitter account, to the following services:`,
+    services_2: `Sending questions to site users`,
+    services_3: `Receiving questions, from identified users or not`,
+    services_4: `Setting up a profile, with its own profile photo, banner, and personal message`,
+    services_5: `The site is accessible free of charge anywhere to any User with Internet access;
+         All costs incurred by the User to access the service (hardware, software, Internet connection, etc.) are his responsibility.`,
+    services_6: `In some cases:`,
+    services_7: `Depending on the user's wishes, the sending of questions on a profile can be limited to authenticated users`,
+    services_8: `You can block or be blocked by other users so that you no longer send or receive their questions`,
+    services_9: `The unidentified user does not have access to services reserved for members, such as sending questions without anonymity.
+         To do this, he must identify himself using his Twitter account, using the connection button provided at the root of the website.`,
+    services_10: `The site implements all the means at its disposal to ensure quality access to its services.
+         The obligation being of means, the site does not undertake to achieve this result.
+         Any event due to a case of force majeure resulting in a malfunction of the network or the server does not engage the responsibility of QuestionIt.space.`,
+    services_11: `Access to the services of the site may at any time be subject to interruption, suspension,
+         a modification without notice for maintenance or for any other case.
+         The user undertakes not to claim any compensation following the interruption, suspension or modification of this contract.`,
+    services_12: `In the event of a dispute or problem on the site, the creator can be contacted at {link}.`,
+    intellectual_property: `Intellectual property`,
+    intellectual_property_1: `The trademarks, logos, signs and any other content of the site are protected by the
+         Code of intellectual property and more particularly by copyright.`,
+    intellectual_property_2: `The user requests the prior authorization of the site for any reproduction, publication, copy of the various contents.`,
+    intellectual_property_3: `The user undertakes to use the content of the site in a strictly private setting.
+         Use of content for commercial purposes is strictly prohibited.`,
+    intellectual_property_4: `Any content posted by the user is his sole responsibility.
+         The user agrees not to upload content that may harm the interests of third parties.
+         Any legal action brought by an injured third party against the site will be borne by the user.`,
+    intellectual_property_5: `User Content may be deleted or edited by the Site at any time and for any reason.
+         The user does not receive any justification and notification prior to the deletion or modification of user content.`,
+    intellectual_property_6: `Users, if any content posted or used by another user offends you, you may immediately
+           report this content at {link}.`,
+    intellectual_property_7: `Your request will be processed as soon as possible.`,
+    personal_data: `Personal data`,
+    personal_data_1: `The information required for registration on the service is retrieved from your Twitter account.
+         Access to your email address may be used to contact you in the event of a dispute over content you have posted.`,
+    personal_data_2: `The site provides the User with the collection and processing of personal information in respect of privacy.
+         in accordance with french law n°78-17 of January 6, 1978 relating to data processing, files and freedoms.`,
+    personal_data_3: `No data entered on QuestionIt.space is made available to third parties, companies or business partners.`,
+    personal_data_4: `Pursuant to articles 39 and 40 of the law dated January 6, 1978 as well as the general regulations on data protection,
+         the user has a right of access, rectification, deletion and opposition of his personal data.`,
+    personal_data_5: `The user exercises this right by e-mail, at the address {link}`,
+    responsability: `Liability and Force Majeure`,
+    responsability_1: `The information entered by users on the site is their sole responsibility.
+         QuestionIt.space is in no way responsible for or endorses the content of its users.`,
+    responsability_2: `Any use of the service by the User resulting directly or indirectly in damage must be subject to compensation for the benefit of the site.`,
+    responsability_3: `An optimal guarantee of the security and confidentiality of the data transmitted is not provided by the site.
+         However, the site undertakes to implement all necessary means to best guarantee the security and confidentiality of data.`,
+    responsability_4: `The site cannot be held liable in the event of force majeure or the unforeseeable and insurmountable act of a third party.`,
+    contract: `Contract`,
+    contract_1: `The site reserves the right to modify the clauses stipulated in this contract at any time.`,
+    contract_2: `The duration of this contract is indefinite. The contract takes effect with respect to the User from the use of the service.`,
+    contract_3: `La législation française s'applique au présent contrat.
+        En cas d'absence de résolution amiable d'un litige né entre les parties, seuls les tribunaux de la ville de Lyon sont compétents.`,
+    publications: `Publications`,
+    publications_1: `The site allows its users to ask and answer questions.`,
+    publications_2: `In his publications, the user undertakes to respect the rules of Netiquette and the rules of law in force.`,
+    publications_3: `The site exercises a posteriori moderation on the publications and reserves the right to refuse their posting,
+         without having to justify it to the user.`,
+    publications_4: `The user remains the owner of all his intellectual property rights.
+         By posting a question or answer on the site,
+         he grants to QuestionIt.space the non-exclusive and free right to represent, reproduce, adapt, modify, disseminate and distribute his publication,
+         directly or by an authorized third party, worldwide, on any digital or physical medium,
+         for the duration of the intellectual property.
+         In particular, the user assigns the right to use his publication on the Internet.`,
+    images: `Droits sur les images utilisées`,
+    images_1: `All images, except images for profile photos for anonymous users, are free of rights and use.`,
+    images_2: `Images used for anonymous profiles, in accordance with their license authorizing use subject to credit from the author, are {link}.`,
+  },
+
+  privacy_page: {
+    intro: `Foreword: Why does the QuestionIt.space Twitter app require so many permissions?`,
+    intro_1: `When you use the "flow" of connection via Twitter in order to obtain access to an account,
+         Twitter allows 3 levels of permissions: read, read and write, and
+         read, write + private messages.
+         An additional option provides access to the account holder's email address.`,
+    intro_2: `QuestionIt.space uses the second level, read and write,
+         so you can send tweets automatically when you answer a question.
+         This action is explicitly requested by the "Post to Twitter" box next to the reply field.`,
+    intro_3: `Never QuestionIt.space uses access to your profile to publish tweets without your consent, mine data on your
+           profile or follow users without your permission.`,
+    intro_4: `Access to your e-mail address is also requested in the event that a report concerning one of your questions, answers or your profile
+         has come to us. Your email address is not stored, resold or made available to third parties.`,
+    which_data: `What type of data does QuestionIt.space collect about you?`,
+    which_data_1: `QuestionIt.space attaches great importance to the protection and confidentiality of the privacy of its subscribers and
+         more particularly their personal data.
+         In this context, this Privacy Policy will allow you to understand which personal data
+         we collect and what we do with it, as well as how you can protect your privacy in connection with the services we provide.
+
+         As part of the questions asked to users and as part of the creation of your profile, the following information
+         are recorded when you are logged into your account:`,
+    which_data_2: `Questions asked: date sent, content of the question, user ID`,
+    which_data_3: `Answered questions: date of answer, content of answer, user ID`,
+    which_data_4: `Profile (originally downloaded from Twitter): Name, nickname, profile picture, profile banner`,
+    usage: `How is your data used?`,
+    usage_1: `QuestionIt.space uses your data to present your profile, your questions and your answers to users of the platform.
+         Your data may be seized in the event of a violation of the legal notices.`,
+    usage_2: `Your data is not used or collected for commercial or service improvement purposes.`,
+    data: `How to manage your data?`,
+    data_settings: 'settings',
+    data_1: `You can contact {mail} if you ever want to exercise your
+         right of ownership of your data. If you wish to delete your data, you can delete your account from the page
+         {settings}. The deletion of your data will be effective upon confirmation of the deletion of your account.`,
+    data_access: `Who can have access to your data?`,
+    data_access_1: `Your data is processed by QuestionIt.space and no one else. Storage is carried out on servers located in France.`,
+    cookies: `Cookies`,
+    cookies_1: `We need your cookies to allow you to log in to your QuestionIt.space account.
+         By browsing this site, you implicitly accept all cookies used for utility purposes only.`,
+    cookies_2: `QuestionIt.space does not integrate or use any trackers, advertising cookies or tracers, even those of Twitter.`,
+  },
+
   // Explainations to permissions (developer-user page):
   developer_user_permissions: {
     sendQuestion: 'Send questions',
