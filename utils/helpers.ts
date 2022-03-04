@@ -18,7 +18,7 @@ interface IEmojiLib {
 
 export const EmojiLib: IEmojiLib = RawEmojiLib;
 export const AVAILABLE_EMOJIS = Object.keys(EmojiLib.lib);
-export const head: any = "head";
+export const head: any = 'head';
 export const QUESTION_IT_VERSION = '2.0.0';
 export const QUESTION_IT_FULL_URL = process.env.WEB_PUBLIC_URL || 'https://questionit.space';
 export const QUESTION_IT_REAL_URL = process.env.NODE_ENV === 'production' ? QUESTION_IT_FULL_URL : 'http://localhost:5002';
@@ -28,8 +28,6 @@ export const FULL_WHITE_LOGO = QUESTION_IT_FULL_URL + '/images/logo/LogoWhite.pn
 // Images should start to 1.png to {max}.png, max inclusive.
 export const NUMBER_OF_RANDOM_AVATARS = 9;
 export const NUMBER_OF_RANDOM_QOTD_AVATARS = 5;
-const REGEX_URL = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/g;
-const REGEX_AROBASE = /(^|\s)(@([a-zA-Z0-9_]{2,20}))\b/g;
 export const MUTED_WORD_REGEX = /^[\p{L}\p{N}_\. -]{2,32}$/iu;
 export const TOKEN_UNVALIDATED_500_ERROR = '__500_Error__';
 
@@ -37,7 +35,7 @@ export interface TextPart {
   type: 'link' | 'at' | 'text',
   content: string,
   display_text?: string,
-};
+}
 
 export function isTouchDevice() {
   return 'ontouchstart' in window;
@@ -102,28 +100,6 @@ export function isAxiosError(e: any) : e is AxiosError {
   return typeof e === 'object' && e.isAxiosError;
 }
 
-export async function getPushSubscription() {
-  try {
-    const reg = await navigator.serviceWorker.getRegistration();
-
-    if (reg) {
-      const sub = await reg.pushManager.getSubscription();
-      return sub ?? undefined;
-    }
-  } catch (e) {}
-}
-
-export async function cancelPushSubscription(reg?: PushSubscription) {
-  if (!reg) {
-    reg = await getPushSubscription();
-
-    if (!reg) {
-      return;
-    }
-  }
-  return reg.unsubscribe();
-}
-
 export function searchEmoji(input: string) {
   input = input.trim();
   if (input.length < 2) {
@@ -183,91 +159,6 @@ export function handleError(e: any, vueComponent: any) {
       { type: 'error' }
     );
   }
-}
-
-export function questionText(original: string) {
-  // Escape the possible tags to avoid html injection
-  const escaped = original;
-  const aro_reg = new RegExp(REGEX_AROBASE, 'g');
-
-  const matches: TextPart[] = [];
-
-  let match: RegExpExecArray | null;
-  let last_begin_index = 0;
-  // Get the @
-  while (match = aro_reg.exec(escaped)) {
-    // Match: get the match between reg.lastIndex and reg.lastIndex - match[0].length
-    const next = aro_reg.lastIndex;
-    const length_of_match = match[0].length;
-
-    const match_begin = next - length_of_match;
-    const before_match = escaped.slice(last_begin_index, match_begin + match[1].length);
-
-    last_begin_index = next;
-
-    if (before_match.length) {
-      matches.push({ type: 'text', content: before_match });
-    }
-    matches.push({ type: 'at', content: match[3], display_text: match[2] });
-  }
-
-  // Push the possible rest
-  if (last_begin_index < escaped.length) {
-    matches.push({
-      type: 'text',
-      content: escaped.slice(last_begin_index, escaped.length)
-    });
-  }
-
-  // Get the links
-  const all_matches: typeof matches = [];
-  for (const text of matches) {
-    if (text.type !== 'text') {
-      all_matches.push(text);
-      continue;
-    }
-
-    last_begin_index = 0;
-    const reg = new RegExp(REGEX_URL, 'g');
-
-    while (match = reg.exec(text.content)) {
-      // Match: get the match between reg.lastIndex and reg.lastIndex - match[0].length
-      const next = reg.lastIndex;
-
-      try {
-        var url = new URL(match[0].match(/^https?:\/\//) ? match[0] : ('https://' + match[0]));
-      } catch (e) {
-        // Invalid url
-        all_matches.push({ type: 'text', content: text.content.slice(last_begin_index, next) });
-        last_begin_index = next;
-        continue;
-      }
-
-      const display_url = url.host + (url.pathname !== '/' ? url.pathname : '');
-
-      const length_of_match = match[0].length;
-
-      const match_begin = next - length_of_match;
-      const before_match = text.content.slice(last_begin_index, match_begin);
-
-      last_begin_index = next;
-
-      if (before_match.length) {
-        all_matches.push({ type: 'text', content: before_match });
-      }
-      all_matches.push({ type: 'link', content: url.href, display_text: display_url });
-    }
-
-    // Push the possible rest
-    if (last_begin_index < text.content.length) {
-      all_matches.push({
-        type: 'text',
-        content: text.content.slice(last_begin_index, text.content.length)
-      });
-    }
-  }
-
-  return all_matches;
 }
 
 export function dateDiff(date1: Date, date2: Date) {

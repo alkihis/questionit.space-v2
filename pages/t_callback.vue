@@ -9,7 +9,8 @@
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator';
-import { makeTitle, isAxiosError, convertAxiosError, getPushSubscription, handleError } from '~/utils/helpers';
+import { makeTitle, isAxiosError, convertAxiosError, handleError } from '~/utils/helpers';
+import { getPushSubscription } from '~/utils/push.subscription.utils';
 import { ISentUser } from "~/utils/types/sent.entities.types";
 
 // Handle requests made back with twitter API.

@@ -226,7 +226,8 @@
 import { Vue, Component, Prop } from 'nuxt-property-decorator';
 import BulmaModal from './BulmaModal.vue';
 import Badge from '~/components/Badge/Badge';
-import { cancelPushSubscription, getPushSubscription, handleError } from '~/utils/helpers';
+import { handleError } from '~/utils/helpers';
+import { cancelPushSubscription, getPushSubscription } from '~/utils/push.subscription.utils';
 import { ISentUser } from "~/utils/types/sent.entities.types";
 
 @Component({

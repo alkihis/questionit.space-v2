@@ -1,6 +1,7 @@
 import { Vue, Prop, Watch } from 'nuxt-property-decorator';
-import { QUESTION_IT_FULL_URL, dateText, randomAnonymousImage, questionText, randomQuestionOfTheDayImage, handleError, TextPart } from '~/utils/helpers';
+import { QUESTION_IT_FULL_URL, dateText, randomAnonymousImage, randomQuestionOfTheDayImage, handleError, TextPart } from '~/utils/helpers';
 import { ISentQuestion } from "~/utils/types/sent.entities.types";
+import { questionText } from '~/utils/question.utils';
 
 export default class extends Vue {
   @Prop({ required: true })

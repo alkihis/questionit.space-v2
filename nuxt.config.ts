@@ -9,6 +9,10 @@ export default {
    */
   head: {
     title: 'QuestionIt.space',
+    env: {
+      WEB_PUBLIC_URL: process.env.WEB_PUBLIC_URL,
+      NODE_ENV: process.env.NODE_ENV,
+    },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no' },
@@ -102,8 +106,6 @@ export default {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
-    // Doc: https://github.com/nuxt-community/dotenv-module
-    '@nuxtjs/dotenv',
     'cookie-universal-nuxt',
     [
       '@nuxtjs/i18n',
@@ -121,8 +123,6 @@ export default {
    ** See https://axios.nuxtjs.org/options
    */
   axios: {
-    // prefix: '/api/',
-    // proxy: true,
     browserBaseURL: process.env.NODE_ENV === 'production' ? 'https://api.questionit.space/' : 'http://localhost:5001/',
     baseURL: 'http://api:5000/',
     retry: { retries: 3 },
