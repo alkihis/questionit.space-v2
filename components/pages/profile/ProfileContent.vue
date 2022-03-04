@@ -125,7 +125,7 @@
       </div>
 
       <client-only>
-        <infinite-loading :key="displayMode" @infinite="loadAnswers" />
+        <infinite-loading :identifier="displayMode" :key="displayMode" @infinite="loadAnswers" />
       </client-only>
     </div>
 
@@ -146,7 +146,7 @@
         </p>
       </div>
 
-      <infinite-loading :key="displayMode" @infinite="loadFollowings" />
+      <infinite-loading :identifier="displayMode" :key="displayMode" @infinite="loadFollowings" />
     </div>
 
     <!-- Followers -->
@@ -166,7 +166,7 @@
         </p>
       </div>
 
-      <infinite-loading :key="displayMode" @infinite="loadFollowers" />
+      <infinite-loading :identifier="displayMode" :key="displayMode" @infinite="loadFollowers" />
     </div>
   </fluid-container>
 </template>
@@ -310,7 +310,7 @@ export default class extends Vue {
 
   async loadFollowers($state: StateChanger) {
     if (!this.user || !this.$accessor.profile.isSelf || this.followersPage === -1) {
-      this.followingsPage = -1;
+      this.followersPage = -1;
       $state.complete();
       return;
     }
@@ -323,7 +323,7 @@ export default class extends Vue {
         await this.$axios.get('relationship/followers', { params: { page } })
       ).data as IPaginatedResult<ISentUser>;
 
-      this.followingsPage++;
+      this.followersPage++;
 
       if (newFollowers.items.length) {
         this.followers = [...this.followers, ...newFollowers.items];
