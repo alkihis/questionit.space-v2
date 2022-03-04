@@ -62,7 +62,7 @@
         />
         <poll-choice
           v-else
-          :choices="question.attachements.poll.options"
+          :choices="question.attachments.poll.options"
           :choice="answer"
           :allowChoice="true"
           @item-select="onPollChoice"
@@ -136,7 +136,7 @@ export default class extends QuestionBase {
   image_url: string | null = null;
 
   get is_poll() {
-    return !!this.question.attachements?.poll;
+    return !!this.question.attachments?.poll;
   }
 
   onPollChoice(item: string) {

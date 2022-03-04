@@ -142,7 +142,7 @@ export default class extends Vue {
   }
 
   get has_poll() {
-    return !!this.question.attachements?.poll;
+    return !!this.question.attachments?.poll;
   }
 
   copyLinkToClipboard() {
@@ -209,7 +209,7 @@ export default class extends Vue {
     if (real_answer_text.length === 0 && question.answer!.attachment?.url) {
       real_answer_text = '🖼️';
     }
-    if (question.attachements?.poll) {
+    if (question.attachments?.poll) {
       real_answer_text = ('📊 ' + real_answer_text).trimRight();
     }
 

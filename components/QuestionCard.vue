@@ -75,7 +75,7 @@
           </span>
           <div v-else>
             <poll-choice
-              :choices="question.attachements.poll.options"
+              :choices="question.attachments.poll.options"
               :choice="question.answer.content"
             />
           </div>
