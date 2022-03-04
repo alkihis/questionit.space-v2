@@ -123,7 +123,7 @@ export default {
    ** See https://axios.nuxtjs.org/options
    */
   axios: {
-    browserBaseURL: process.env.NODE_ENV === 'production' ? 'https://api.questionit.space/' : 'http://localhost:5001/',
+    browserBaseURL: process.env.NODE_ENV === 'production' ? (process.env.QUESTIONIT_API_URL + '/') : 'http://localhost:5001/',
     baseURL: 'http://api:5000/',
     retry: { retries: 3 },
     progress: false,
