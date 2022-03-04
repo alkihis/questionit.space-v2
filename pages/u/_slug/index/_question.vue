@@ -81,14 +81,14 @@ const LOAD_SIZE = 10;
         return redirect(app.localePath('/u/' + question.receiver.slug + '/' + question.id));
       }
 
-      const replies = (await repliesRequest).data as IPaginatedWithIdsResult<ISentQuestion>;
+      const replies = (await repliesRequest).data.items as ISentQuestion[];
 
       return {
         question,
         ancestors,
         replies,
         hasMore: ancestors.length >= LOAD_SIZE,
-        hasMoreReplies: replies.items.length >= LOAD_SIZE,
+        hasMoreReplies: replies.length >= LOAD_SIZE,
       };
     } catch (error) {
       if (isAxiosError(error)) {

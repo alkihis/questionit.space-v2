@@ -54,9 +54,9 @@
           <div class="timeline-marker is-success"></div>
           <question-ancestor :question="item" />
         </div>
-        <header v-if="(has_more && !loading_replies) || loading_replies" class="timeline-header">
+        <header v-if="(hasMoreReplies && !loading_replies) || loading_replies" class="timeline-header">
           <!-- If more available -->
-          <a v-if="has_more && !loading_replies" href="#!" @click="loadPrevious()" class="tag is-medium is-warning">{{ $t('load_more') }}</a>
+          <a v-if="hasMoreReplies && !loading_replies" href="#!" @click="loadPrevious()" class="tag is-medium is-warning">{{ $t('load_more') }}</a>
 
           <!-- If more being fetched -->
           <span v-if="loading_replies" class="tag is-medium is-warning">...</span>
