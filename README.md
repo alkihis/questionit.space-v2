@@ -1,22 +1,14 @@
-# questionit
+# questionit.space
 
 > A lightweight, simple question-answer website for Twitter users
 
-## Build Setup
+**This is the web client of QuestionIt.space**. Please see bootstrap to access all projects.
 
-```bash
-# install dependencies
-$ npm install
+### Tech stack:
+- Vue 2.6.x
+- Nuxt 2
+- Node ^14
 
-# serve with hot reload at localhost:3000
-$ npm run dev
+## Run
 
-# build for production and launch server
-$ npm run build
-$ npm run start
-
-# generate static project
-$ npm run generate
-```
-
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+See bootstrap to learn how service can be started in dev mode.
