@@ -28,7 +28,7 @@
             v-if="is_reply"
             class="question-card-reply"
             target="_blank"
-            :href="localePath('/u/' + question.receiver.slug + '/' + question.in_reply_to)"
+            :href="localePath('/u/' + question.receiver.slug + '/' + question.inReplyToQuestionId)"
           >
             <span class="icon has-text-info">
               <i class="fas fa-reply"></i>
