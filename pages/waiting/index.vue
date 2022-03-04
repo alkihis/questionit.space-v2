@@ -114,10 +114,11 @@
 <script lang="ts">
 import { Component, Vue } from 'nuxt-property-decorator';
 import QuestionCardNoReply from '~/components/QuestionCardNoReply/QuestionCardNoReply.vue';
-import { makeTitle, handleError, isAxiosError, convertAxiosError, cancelPushSubscription } from '~/utils/helpers';
+import { makeTitle, handleError, isAxiosError, convertAxiosError } from '~/utils/helpers';
 import { StateChanger } from 'vue-infinite-loading';
 import BulmaModal from '~/components/BulmaModal.vue';
 import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
+import { cancelPushSubscription } from '~/utils/push.subscription.utils';
 
 interface AlreadyReplied {
   type: 'already_replied'
