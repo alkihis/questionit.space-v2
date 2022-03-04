@@ -3,7 +3,7 @@ import hooks from './utils/hooks';
 
 export default {
   hooks,
-  server: { port: 5000, host: process.env.NODE_ENV === 'production' ? '127.0.0.1' : '0.0.0.0' },
+  server: { port: 5000, host: '0.0.0.0' },
   /*
    ** Headers of the page
    */
