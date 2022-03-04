@@ -2,7 +2,7 @@
 
 > A lightweight, simple question-answer website for Twitter users
 
-**This is the web client of QuestionIt.space**. Please see bootstrap to access all projects.
+**This is the web client of QuestionIt.space**. Please see [bootstrap](https://github.com/alkihis/questionit.bootstrap) to access all projects.
 
 ### Tech stack:
 - Vue 2.6.x
