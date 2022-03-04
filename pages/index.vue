@@ -28,7 +28,7 @@
       <div class="content nanum">
         <p>
           <span class="questionit-copyright">
-            QuestionIt.space beta - Version {{ version }}
+            QuestionIt.space - Version {{ version }}
           </span>
           <br />
 
