@@ -45,6 +45,15 @@ export const mutations = {
   },
   setLoggedUser(state: GlobalState, user: ISentUser | null) {
     state.loggedUser = user;
+
+    if (user) {
+      // Also update available users array
+      const existant = state.availableUsers.findIndex(e => e.id === user.id);
+
+      if (existant !== -1) {
+        state.availableUsers[existant] = user;
+      }
+    }
   },
   addLoggedUser(state: GlobalState, data: [ISentUser, string]) {
     const existant = state.availableUsers.findIndex(e => e.id === data[0].id);
