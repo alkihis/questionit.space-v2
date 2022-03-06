@@ -14,10 +14,10 @@
       <div v-if="ancestors.length" class="timeline">
         <header class="timeline-header">
           <!-- If first question fetched (no more) -->
-          <span v-if="!has_more" class="tag is-medium is-info">{{ $t('first_question') }}</span>
+          <span v-if="!hasMoreReplies" class="tag is-medium is-info">{{ $t('first_question') }}</span>
 
           <!-- If more available -->
-          <a v-if="has_more && !loading_ancestors" href="#!" @click="loadPrevious()" class="tag is-medium is-warning">{{ $t('load_more') }}</a>
+          <a v-if="hasMoreReplies && !loading_ancestors" href="#!" @click="loadPrevious()" class="tag is-medium is-warning">{{ $t('load_more') }}</a>
 
           <!-- If more being fetched -->
           <span v-if="loading_ancestors" class="tag is-medium is-info">...</span>
@@ -69,7 +69,7 @@
 <script lang="ts">
 import { Component, Vue, Prop } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal.vue';
-import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
+import QuestionAncestor from '~/components/QuestionAncestor.vue';
 import { handleError } from '~/utils/helpers';
 import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';
 import QuestionCard from "~/components/QuestionCard.vue";

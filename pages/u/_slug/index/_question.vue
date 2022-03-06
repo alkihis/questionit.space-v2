@@ -29,7 +29,7 @@
 import { Component, Vue, Prop } from 'nuxt-property-decorator';
 import BulmaModal from '~/components/BulmaModal.vue';
 import QuestionCard from '~/components/QuestionCard.vue';
-import QuestionAncestor from '~/components/QuestionAncestor/QuestionAncestor';
+import QuestionAncestor from '~/components/QuestionAncestor.vue';
 import QuestionConversation from '~/components/QuestionConversation/QuestionConversation.vue';
 import { isAxiosError, convertAxiosError, makeTitle, fullDateText, randomAnonymousImage, QUESTION_IT_FULL_URL } from '~/utils/helpers';
 import { IPaginatedWithIdsResult, ISentQuestion } from '~/utils/types/sent.entities.types';

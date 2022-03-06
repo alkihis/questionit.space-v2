@@ -145,6 +145,10 @@ export default class extends Vue {
     return !!this.question.attachments?.poll;
   }
 
+  get has_image() {
+    return !!this.question.answer?.attachment?.url;
+  }
+
   copyLinkToClipboard() {
     navigator.clipboard.writeText(this.question_url)
       .then(() => {
