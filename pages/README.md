@@ -10,7 +10,7 @@
 ## Pages without interface (redirections...)
 
 - s.vue => redirection to logged user if any, otherwise to home page
-- logout.vue => redirection to / after deconnection
+- logout.vue => redirection to / after logout
 
 This directory contains your Application Views and Routes.
 The framework reads all the `*.vue` files inside this directory and creates the router of your application.
