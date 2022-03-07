@@ -19,7 +19,7 @@ interface IEmojiLib {
 export const EmojiLib: IEmojiLib = RawEmojiLib;
 export const AVAILABLE_EMOJIS = Object.keys(EmojiLib.lib);
 export const head: any = 'head';
-export const QUESTION_IT_VERSION = '2.0.0';
+export const QUESTION_IT_VERSION = process.env.APP_VERSION;
 export const QUESTION_IT_FULL_URL = process.env.WEB_PUBLIC_URL || 'https://questionit.space';
 export const QUESTION_IT_REAL_URL = process.env.NODE_ENV === 'production' ? QUESTION_IT_FULL_URL : 'http://localhost:5002';
 export const FULL_BLACK_LOGO = QUESTION_IT_FULL_URL + '/images/logo/LogoBlack.png';

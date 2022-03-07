@@ -12,6 +12,7 @@ export default {
     env: {
       WEB_PUBLIC_URL: process.env.WEB_PUBLIC_URL,
       NODE_ENV: process.env.NODE_ENV,
+      APP_VERSION: process.env.APP_VERSION,
     },
     meta: [
       { charset: 'utf-8' },
