@@ -45,6 +45,11 @@ body > .wrapper {
 	z-index: 99999;
 }
 
+figure.image img {
+	max-height: 100%;
+	object-fit: cover;
+}
+
 .logout-popup {
 	z-index: 15000;
 	position: fixed;
