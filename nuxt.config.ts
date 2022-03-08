@@ -4,16 +4,16 @@ import hooks from './utils/hooks';
 export default {
   hooks,
   server: { port: 5000, host: '0.0.0.0' },
+  env: {
+    WEB_PUBLIC_URL: process.env.WEB_PUBLIC_URL,
+    NODE_ENV: process.env.NODE_ENV,
+    APP_VERSION: process.env.APP_VERSION,
+  },
   /*
    ** Headers of the page
    */
   head: {
     title: 'QuestionIt.space',
-    env: {
-      WEB_PUBLIC_URL: process.env.WEB_PUBLIC_URL,
-      NODE_ENV: process.env.NODE_ENV,
-      APP_VERSION: process.env.APP_VERSION,
-    },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no' },
