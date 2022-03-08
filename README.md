@@ -10,9 +10,9 @@
 
 ### Tech stack
 
-- Vue 2.6.x
+- Vue 2.6
 - Nuxt 2
-- Node ^14
+- Node =14
 
 ### Architecture
 
@@ -30,4 +30,4 @@ Classic Nuxt project:
 
 ## Run
 
-See bootstrap to learn how service can be started in dev mode.
+See bootstrap to learn how service can be started.

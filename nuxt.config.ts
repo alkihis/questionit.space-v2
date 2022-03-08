@@ -112,7 +112,6 @@ export default {
       '@nuxtjs/i18n',
       i18nConfig,
     ],
-    '@nuxtjs/proxy',
     '@nuxtjs/toast',
   ],
   toast: {
