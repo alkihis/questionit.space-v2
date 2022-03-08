@@ -306,6 +306,7 @@ export default {
   is_user_hashtag_active_description: 'Tweets generated when you reply a question will contain that hashtag',
   is_user_hashtag_active_help: 'Numbers & letters only, maximum 16 characters',
   use_rocket_emoji_on_questions: 'Prefix generated tweets when your reply with a 🚀 emoji',
+  view_on_github: 'View on GitHub',
 
   mentions_page: {
     preambule: 'Preamble',
