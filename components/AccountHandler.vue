@@ -359,7 +359,7 @@ export default class extends Vue {
       const accounts = this.$accessor.userTokenCouples.filter(e => !this.isSelf(e[0]));
 
       const results = await Promise.all(
-        accounts.map(a => this.$axios.$get('notification/count', { headers: { Authorization: 'Bearer ' + a[1] } }))
+        accounts.map(a => this.$axios.$get('notification/counts', { headers: { Authorization: 'Bearer ' + a[1] } }))
       ) as { questions: number; notifications: number; }[];
 
       this.counts = {};

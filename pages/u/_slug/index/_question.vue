@@ -125,7 +125,7 @@ export default class extends Vue {
     const question = this.question;
     const dscr = `${
       this.$t('someone_asked', { name: question.owner?.name ?? this.$t('anonymous') })
-    } ${question.content} — ${question.answer} (${fullDateText(new Date(question.createdAt), this, true, true)})`;
+    } ${question.content} — ${question.answer?.content ?? ''} (${fullDateText(new Date(question.answer?.createdAt ?? question.createdAt), this, true, true)})`;
     const url = QUESTION_IT_FULL_URL + '/u/' + user.slug + '/' + question.id;
     const title = makeTitle(user.name);
 
